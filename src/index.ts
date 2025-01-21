@@ -5,16 +5,20 @@ import { useGeographic } from 'ol/proj';
 import {Point} from 'ol/geom.js';
 import {Circle, Fill, Stroke, Style} from 'ol/style.js';
 import VectorSource from 'ol/source/Vector';
-import sightings from './sightings.json';
+import conserveSightings from './conserve-sightings.json';
+import inaturalistObservations from './inaturalist-sightings.json';
 import { Feature, Observable } from 'ol';
 import VectorLayer from 'ol/layer/Vector';
-import { XYZ } from 'ol/source';
+import { Vector, XYZ } from 'ol/source';
 import {Control, defaults as defaultControls} from 'ol/control.js';
 import Link from 'ol/interaction/Link.js';
 import {defaults as defaultInteractions} from 'ol/interaction/defaults';
 import { Temporal } from 'temporal-polyfill';
+import GeoJSON from 'ol/format/GeoJSON';
 
 useGeographic();
+
+// wsdot key dd816e21-7394-414b-8f6d-57751494b0b1
 
 // https://www.inaturalist.org/observations/258050998
 let location = [-122.450, 47.8];
@@ -76,8 +80,21 @@ const view = new View({
   zoom: 11,
 });
 
+const inaturalistSource = new VectorSource({
+  features: inaturalistObservations.results.map(obs => {
+    return new Feature({
+      geometry: new Point(obs.geojson.coordinates),
+      observed: Temporal.Instant.from(obs.time_observed_at),
+    })
+  }),
+});
+
+const inaturalistLayer = new VectorLayer({
+  source: inaturalistSource,
+});
+
 const sightingSource = new VectorSource({
-  features: sightings.map(sighting => new Feature({
+  features: conserveSightings.map(sighting => new Feature({
     geometry: new Point([sighting.longitude, sighting.latitude]),
     created: (Temporal.Instant.from(sighting.created.replace(' ', 'T') + 'Z')),
   })),
@@ -92,8 +109,8 @@ const sightingLayer = new VectorLayer({
   style: (feature, resolution) => {
     const created: Temporal.Instant = feature.get('created');
     const timeDelta = pit.value?.toInstant().until(created) || new Temporal.Duration();
-    const deltaScale = Math.abs(clamp(timeDelta.total('days') / 2, -1, 1));
-    const hue = timeDelta.sign < 0 ? 20 : 200;
+    const deltaScale = Math.abs(clamp(timeDelta.total('days') * 6, -1, 1));
+    const hue = timeDelta.sign < 0 ? 100 : 280;
     const fill = new Fill({color: `hsl(${hue} 50% 50% / ${1 - deltaScale})`});
     const stroke = new Stroke({color: `hsl(${hue} 50% 50% / 1.0)`});
     return new Style({
@@ -128,6 +145,7 @@ const map = new Map({
       //   mapType: 'terrain',
       // }),
     }),
+    inaturalistLayer,
     sightingLayer,
   ],
   view,
