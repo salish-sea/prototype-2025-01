@@ -2,19 +2,16 @@ import Map from 'ol/Map';
 import TileLayer from 'ol/layer/Tile';
 import View from 'ol/View';
 import { useGeographic } from 'ol/proj';
-import {Point} from 'ol/geom.js';
 import {Circle, Fill, Stroke, Style} from 'ol/style.js';
-import VectorSource from 'ol/source/Vector';
-import conserveSightings from './conserve-sightings.json';
-import inaturalistObservations from './inaturalist-sightings.json';
-import { Feature, Observable } from 'ol';
 import VectorLayer from 'ol/layer/Vector';
-import { Vector, XYZ } from 'ol/source';
+import { Source, XYZ } from 'ol/source';
 import {Control, defaults as defaultControls} from 'ol/control.js';
 import Link from 'ol/interaction/Link.js';
 import {defaults as defaultInteractions} from 'ol/interaction/defaults';
 import { Temporal } from 'temporal-polyfill';
-import GeoJSON from 'ol/format/GeoJSON';
+import { INaturalistSource } from './source/inaturalist';
+import { MaplifySource } from './source/maplify';
+import { PointInTime } from './PointInTime';
 
 useGeographic();
 
@@ -23,31 +20,7 @@ useGeographic();
 // https://www.inaturalist.org/observations/258050998
 let location = [-122.450, 47.8];
 
-class PointInTime extends Observable {
-  value: Temporal.ZonedDateTime | null = null;
-
-  // format is YYYY-MM-DDTHH:mm, timezone is PST8PDT
-  set(value: string | null) {
-    if (!value) {
-      console.log('clearing pit value');
-      this.value = null;
-    } else {
-      try {
-        console.log('setting pit value');
-        this.value = Temporal.PlainDateTime.from(value).toZonedDateTime('PST8PDT');
-      } catch (error) {
-        console.log(`error setting pit value: ${error}`);
-        this.value = null;
-      }
-    }
-    link.update('t', this.toNaiveISO());
-    sightingSource?.changed();
-  }
-
-  toNaiveISO(): string | null {
-    return this.value?.toString({offset: 'never', smallestUnit: 'minute', timeZoneName: 'never'}) || null;
-  }
-}
+const pit = new PointInTime();
 
 class TimeControl extends Control {
   constructor(options: object = {}) {
@@ -73,6 +46,7 @@ class TimeControl extends Control {
 declare global {
   var map: Map;
   var view: View;
+  var source: Source;
 }
 
 const view = new View({
@@ -80,25 +54,15 @@ const view = new View({
   zoom: 11,
 });
 
-const inaturalistSource = new VectorSource({
-  features: inaturalistObservations.results.map(obs => {
-    return new Feature({
-      geometry: new Point(obs.geojson.coordinates),
-      observed: Temporal.Instant.from(obs.time_observed_at),
-    })
-  }),
+export const inaturalistSource = new INaturalistSource({
+  taxon: 152871, // Cetacea
+  pit,
 });
-
 const inaturalistLayer = new VectorLayer({
   source: inaturalistSource,
 });
 
-const sightingSource = new VectorSource({
-  features: conserveSightings.map(sighting => new Feature({
-    geometry: new Point([sighting.longitude, sighting.latitude]),
-    created: (Temporal.Instant.from(sighting.created.replace(' ', 'T') + 'Z')),
-  })),
-});
+export const sightingSource = new MaplifySource({pit});
 
 function clamp(value: number, low: number, high: number) {
   return Math.max(low, Math.min(value, high));
@@ -108,7 +72,7 @@ const sightingLayer = new VectorLayer({
   source: sightingSource,
   style: (feature, resolution) => {
     const created: Temporal.Instant = feature.get('created');
-    const timeDelta = pit.value?.toInstant().until(created) || new Temporal.Duration();
+    const timeDelta = pit.value?.until(created) || new Temporal.Duration();
     const deltaScale = Math.abs(clamp(timeDelta.total('days') * 6, -1, 1));
     const hue = timeDelta.sign < 0 ? 100 : 280;
     const fill = new Fill({color: `hsl(${hue} 50% 50% / ${1 - deltaScale})`});
@@ -119,13 +83,13 @@ const sightingLayer = new VectorLayer({
   },
 });
 
-const pit = new PointInTime();
 const setTime = pit.set.bind(pit);
-const link = new Link({replace: true});
+export const link = new Link({replace: true});
 setTime(link.track('t', newValue => {
   console.log('link t param changed');
   setTime(newValue);
 }));
+pit.on('change', () => link.update('t', pit.toNaiveISO()));
 
 const map = new Map({
   target: 'map',
@@ -150,5 +114,14 @@ const map = new Map({
   ],
   view,
 });
+map.on('click', event => {
+  const features = map.getFeaturesAtPixel(event.pixel);
+  for (const feature of features) {
+    const url: string | undefined = feature.getProperties().url;
+    if (url)
+      window.open(url, 'observation');
+  }
+});
 globalThis.map = map;
 globalThis.view = view;
+globalThis.source = sightingSource;
