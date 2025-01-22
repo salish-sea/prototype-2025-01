@@ -77,6 +77,6 @@ export class INaturalistSource extends VectorSource {
     super({format: new ObservationPage(), strategy: bbox, url});
 
     this.taxonId = taxon;
-    pit.on('change', () => this.changed());
+    pit.on('change', () => this.refresh());
   }
 }

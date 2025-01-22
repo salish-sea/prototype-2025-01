@@ -6,7 +6,7 @@ import { Feature } from 'ol';
 import { Geometry, Point } from 'ol/geom';
 import type { Projection } from 'ol/proj';
 import type { PointInTime } from '../PointInTime';
-import { bbox } from 'ol/loadingstrategy';
+import { all, bbox } from 'ol/loadingstrategy';
 import {get as getProjection} from 'ol/proj';
 
 type Result = {
@@ -66,9 +66,14 @@ export class MaplifySource extends VectorSource {
       if (!pit.earliest || !pit.latest)
         return '';
 
+      minx = Math.max(minx, -180);
+      miny = Math.max(miny, -90);
+      maxx = Math.min(maxx, 180);
+      maxy = Math.min(maxy, 90);
+
       return 'https://maplify.com/waseak/php/search-all-sightings.php' +
-        `?BBOX=${minx.toFixed(6)},${miny.toFixed(6)},${maxx.toFixed(6)},${maxy.toFixed(6)}` +
-        `&start=${pit.earliest}&end=${pit.latest}`;
+        `?start=${pit.earliest}&end=${pit.latest}` +
+        `&BBOX=${minx.toFixed(3)},${miny.toFixed(3)},${maxx.toFixed(3)},${maxy.toFixed(3)}`;
     };
     const format = new MaplifyFormat();
     const loader = (extent: Extent, resolution: number, projection: Projection, success: any, failure: any) => {
@@ -84,8 +89,10 @@ export class MaplifySource extends VectorSource {
         })
         .catch(() => failure && failure());
     };
-    super({format, loader, strategy: bbox, url});
+    super({format, loader, strategy: all, url});
     this.pit = pit;
-    pit.on('change', () => this.changed());
+    pit.on('change', () => {
+      this.refresh();
+    });
   }
 }

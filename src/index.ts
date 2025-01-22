@@ -5,15 +5,21 @@ import { useGeographic } from 'ol/proj';
 import {Circle, Fill, Stroke, Style} from 'ol/style.js';
 import VectorLayer from 'ol/layer/Vector';
 import { Source, XYZ } from 'ol/source';
-import {Control, defaults as defaultControls} from 'ol/control.js';
+import {defaults as defaultControls} from 'ol/control.js';
 import Link from 'ol/interaction/Link.js';
 import {defaults as defaultInteractions} from 'ol/interaction/defaults';
 import { Temporal } from 'temporal-polyfill';
 import { INaturalistSource } from './source/inaturalist';
 import { MaplifySource } from './source/maplify';
 import { PointInTime } from './PointInTime';
+import TimeControl from './control/TimeControl';
 
 useGeographic();
+
+// TODO:
+// - temporal scale
+// - select iNaturalist taxon
+// - info window
 
 // wsdot key dd816e21-7394-414b-8f6d-57751494b0b1
 
@@ -21,27 +27,6 @@ useGeographic();
 let location = [-122.450, 47.8];
 
 const pit = new PointInTime();
-
-class TimeControl extends Control {
-  constructor(options: object = {}) {
-    const container = document.createElement('div');
-    container.className = 'time-control ol-unselectable ol-control';
-    const input = document.createElement('input');
-    input.type = 'datetime-local';
-    input.value = pit.toNaiveISO() || '';
-    input.min = '1900-01-01T00:00';
-    input.max = (new Date()).toISOString().slice(0, 16);
-    container.appendChild(input);
-
-    super({...options, element: container})
-
-    input.addEventListener('change', e => {
-      console.log('time control changed');
-      const target = e.target as HTMLInputElement;
-      setTime(target.value);
-    }, {passive: true});
-  }
-}
 
 declare global {
   var map: Map;
@@ -51,7 +36,7 @@ declare global {
 
 const view = new View({
   center: location,
-  zoom: 11,
+  zoom: 9,
 });
 
 export const inaturalistSource = new INaturalistSource({
@@ -81,12 +66,14 @@ const sightingLayer = new VectorLayer({
     const created: Temporal.Instant = feature.get('created');
     const delta = pit.value?.until(created) || new Temporal.Duration();
     const absDeltaHours = Math.abs(delta.total('hours'));
-    const hue = delta.sign < 0 ? 100 : 280;
-    if (absDeltaHours < 1) {
-      return markerStyle({hue, opacity: 1 - absDeltaHours / 2});
-    } else {
-      return markerStyle({hue, opacity: Math.max(0.15, 0.5 - absDeltaHours / 6)});
-    }
+    const hue = delta.sign < 0 ? 280 : 100;
+    const opacity = Math.min(1, 0.5 * Math.pow(absDeltaHours, -0.5)); // power law, 1 hour delta = 50% opacity
+    return new Style({
+      image: new Circle({
+        fill: new Fill({color: `hsl(${hue} 50% 50% / ${opacity})`}),
+        radius: 5,
+      })
+    });
   },
 });
 
@@ -102,7 +89,7 @@ if (!pit.value)
 
 const map = new Map({
   target: 'map',
-  controls: defaultControls().extend([new TimeControl()]),
+  controls: defaultControls().extend([new TimeControl({pit})]),
   interactions: defaultInteractions().extend([link]),
   layers: [
     new TileLayer({
@@ -126,6 +113,9 @@ const map = new Map({
 map.on('click', event => {
   const features = map.getFeaturesAtPixel(event.pixel);
   for (const feature of features) {
+    const created: Temporal.Instant = feature.getProperties().created;
+    console.log(`created: ${created.toZonedDateTimeISO('PST8PDT')}`);
+
     const url: string | undefined = feature.getProperties().url;
     if (url)
       window.open(url, 'observation');
