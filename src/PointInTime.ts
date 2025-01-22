@@ -7,11 +7,13 @@ export class PointInTime extends Observable {
   value: Temporal.Instant | null = null;
 
   // format is YYYY-MM-DDTHH:mm, timezone is PST8PDT
-  set(value: string | null) {
+  set(value: Temporal.Instant | string | null) {
     const prevValue = this.value;
     if (!value) {
       console.log('clearing pit value');
       this.value = null;
+    } else if (value instanceof Temporal.Instant) {
+      this.value = value;
     } else {
       try {
         console.log('setting pit value');

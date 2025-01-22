@@ -68,18 +68,25 @@ function clamp(value: number, low: number, high: number) {
   return Math.max(low, Math.min(value, high));
 }
 
+const markerStyle = ({hue, opacity}: {hue: number, opacity: number}) => new Style({
+  image: new Circle({
+    fill: new Fill({color: `hsl(${hue.toFixed(0)} 50% 50% / ${opacity.toFixed(2)})`}),
+    radius: 5,
+  }),
+});
+
 const sightingLayer = new VectorLayer({
   source: sightingSource,
-  style: (feature, resolution) => {
+  style: (feature) => {
     const created: Temporal.Instant = feature.get('created');
-    const timeDelta = pit.value?.until(created) || new Temporal.Duration();
-    const deltaScale = Math.abs(clamp(timeDelta.total('days') * 6, -1, 1));
-    const hue = timeDelta.sign < 0 ? 100 : 280;
-    const fill = new Fill({color: `hsl(${hue} 50% 50% / ${1 - deltaScale})`});
-    const stroke = new Stroke({color: `hsl(${hue} 50% 50% / 1.0)`});
-    return new Style({
-      image: new Circle({fill, radius: 5}),
-    });
+    const delta = pit.value?.until(created) || new Temporal.Duration();
+    const absDeltaHours = Math.abs(delta.total('hours'));
+    const hue = delta.sign < 0 ? 100 : 280;
+    if (absDeltaHours < 1) {
+      return markerStyle({hue, opacity: 1 - absDeltaHours / 2});
+    } else {
+      return markerStyle({hue, opacity: Math.max(0.15, 0.5 - absDeltaHours / 6)});
+    }
   },
 });
 
@@ -90,6 +97,8 @@ setTime(link.track('t', newValue => {
   setTime(newValue);
 }));
 pit.on('change', () => link.update('t', pit.toNaiveISO()));
+if (!pit.value)
+  pit.set(Temporal.Now.instant());
 
 const map = new Map({
   target: 'map',

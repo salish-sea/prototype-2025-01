@@ -8,7 +8,6 @@ import type { Projection } from 'ol/proj';
 import type { PointInTime } from '../PointInTime';
 import { bbox } from 'ol/loadingstrategy';
 import {get as getProjection} from 'ol/proj';
-import { xhr } from 'ol/featureloader';
 
 type Result = {
   type: string;
@@ -42,7 +41,7 @@ class MaplifyFormat extends JSONFeature {
   protected readFeatureFromObject(object: Result, options?: import("ol/format/Feature").ReadOptions): Feature<Geometry> | Feature<Geometry>[] {
     const feature = new Feature();
     feature.setProperties({
-      created: Temporal.PlainDateTime.from(object.created).toZonedDateTime('PST8PDT').toInstant(),
+      created: Temporal.PlainDateTime.from(object.created).toZonedDateTime('GMT').toInstant(),
       name: object.name,
     });
     feature.setGeometry(new Point([object.longitude, object.latitude]));
@@ -58,8 +57,6 @@ class MaplifyFormat extends JSONFeature {
     return getProjection('EPSG:4326')!;
   }
 }
-  xhr
-
 
 export class MaplifySource extends VectorSource {
   pit: PointInTime;
