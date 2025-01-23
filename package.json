@@ -3,10 +3,10 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "build": "webpack --mode=development",
-    "serve": "webpack serve --mode=development",
+    "build": "webpack --config webpack.prod.js",
+    "serve": "webpack serve --open --config webpack.dev.js",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "watch": "webpack --mode=development --watch"
+    "watch": "webpack --config webpack.dev.js --watch"
   },
   "keywords": [],
   "author": "Peter Abrahamsen",

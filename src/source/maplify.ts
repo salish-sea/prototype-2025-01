@@ -8,6 +8,9 @@ import type { Projection } from 'ol/proj';
 import type { PointInTime } from '../PointInTime';
 import { all, bbox } from 'ol/loadingstrategy';
 import {get as getProjection} from 'ol/proj';
+import { observationId } from '../observation';
+
+type Source = 'CINMS' | 'ocean_alert' | 'rwsas' | 'FARPB' | 'whale_alert';
 
 type Result = {
   type: string;
@@ -27,7 +30,7 @@ type Result = {
   moderated: number;
   trusted: number;
   is_test: number;
-  source: string;
+  source: Source;
   usernm: string;
   icon: string;
 }
@@ -37,15 +40,25 @@ type APIResponse = {
   results: Result[];
 }
 
+export type MaplifyProperties = {
+  kind: string;
+  observedAt: Temporal.Instant;
+  source: Source;
+  url: string | null;
+}
+
 class MaplifyFormat extends JSONFeature {
   protected readFeatureFromObject(object: Result, options?: import("ol/format/Feature").ReadOptions): Feature<Geometry> | Feature<Geometry>[] {
     const feature = new Feature();
-    feature.setProperties({
-      created: Temporal.PlainDateTime.from(object.created).toZonedDateTime('GMT').toInstant(),
-      name: object.name,
-    });
+    const properties: MaplifyProperties = {
+      kind: object.name,
+      observedAt: Temporal.PlainDateTime.from(object.created).toZonedDateTime('GMT').toInstant(),
+      source: object.source,
+      url: null,
+    };
+    feature.setProperties(properties);
     feature.setGeometry(new Point([object.longitude, object.latitude]));
-    feature.setId(`${object.source}:${object.id}`);
+    feature.setId(observationId(object.source, object.id));
     return feature;
   }
 

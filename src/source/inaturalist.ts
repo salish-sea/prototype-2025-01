@@ -20,10 +20,18 @@ type Observation = {
   geojson: {coordinates: [number, number], type: 'Point'};
   geoprivacy: string | null;
   public_positional_accuracy: number;
-  taxon: {scientific_name: string};
+  taxon: {common_name: string | null; scientific_name: string};
   taxon_geoprivacy: string | null;
   time_observed_at: string | null;
   uri: string;
+}
+
+export type INaturalistProperties = {
+  kind: string;
+  obscured: boolean;
+  observedAt: Temporal.Instant | null;
+  source: 'inaturalist';
+  url: string;
 }
 
 class ObservationPage extends GeoJSON {
@@ -37,17 +45,17 @@ class ObservationPage extends GeoJSON {
           console.error(`Failed to decode time_observed_at for iNaturalist observation ${obs.id}: ${error}`);
         }
       }
+      const properties: INaturalistProperties = {
+        kind: obs.taxon.common_name || obs.taxon.scientific_name,
+        obscured: obs.geoprivacy === 'obscured' || obs.taxon_geoprivacy === 'obscured',
+        observedAt,
+        source: 'inaturalist',
+        url: obs.uri,
+      };
       return {
         geometry: obs.geojson,
         id: obs.uri,
-        properties: {
-          geoprivacy: obs.geoprivacy,
-          observedAt,
-          positionalAccuracy: obs.public_positional_accuracy,
-          taxon: obs.taxon.scientific_name,
-          taxonGeoprivacy: obs.taxon_geoprivacy,
-          url: obs.uri,
-        },
+        properties,
         type: 'Feature',
       };
     });

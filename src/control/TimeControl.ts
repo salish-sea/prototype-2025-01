@@ -6,6 +6,7 @@ export default class TimeControl extends Control {
   constructor({pit}: {pit: PointInTime}) {
     const container = document.createElement('div');
     container.className = 'time-control ol-unselectable ol-control';
+
     const input = document.createElement('input');
     input.type = 'datetime-local';
     input.value = pit.toNaiveISO() || '';

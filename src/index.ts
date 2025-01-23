@@ -13,6 +13,7 @@ import { INaturalistSource } from './source/inaturalist';
 import { MaplifySource } from './source/maplify';
 import { PointInTime } from './PointInTime';
 import TimeControl from './control/TimeControl';
+import ObservationsControl from './control/ObservationsControl';
 
 useGeographic();
 
@@ -63,7 +64,7 @@ const markerStyle = ({hue, opacity}: {hue: number, opacity: number}) => new Styl
 const sightingLayer = new VectorLayer({
   source: sightingSource,
   style: (feature) => {
-    const created: Temporal.Instant = feature.get('created');
+    const created: Temporal.Instant = feature.get('observedAt');
     const delta = pit.value?.until(created) || new Temporal.Duration();
     const absDeltaHours = Math.abs(delta.total('hours'));
     const hue = delta.sign < 0 ? 280 : 100;
@@ -87,9 +88,11 @@ pit.on('change', () => link.update('t', pit.toNaiveISO()));
 if (!pit.value)
   pit.set(Temporal.Now.instant());
 
+const observationsControl = new ObservationsControl({});
+
 const map = new Map({
   target: 'map',
-  controls: defaultControls().extend([new TimeControl({pit})]),
+  controls: defaultControls().extend([new TimeControl({pit}), observationsControl]),
   interactions: defaultInteractions().extend([link]),
   layers: [
     new TileLayer({
@@ -112,14 +115,9 @@ const map = new Map({
 });
 map.on('click', event => {
   const features = map.getFeaturesAtPixel(event.pixel);
-  for (const feature of features) {
-    const created: Temporal.Instant = feature.getProperties().created;
-    console.log(`created: ${created.toZonedDateTimeISO('PST8PDT')}`);
-
-    const url: string | undefined = feature.getProperties().url;
-    if (url)
-      window.open(url, 'observation');
-  }
+  if (features.length === 0)
+    return;
+  observationsControl.showObservations(features);
 });
 globalThis.map = map;
 globalThis.view = view;
