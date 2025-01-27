@@ -1,0 +1,312 @@
+{
+  "1": {
+    "id": 1,
+    "name": "Animalia",
+    "parent_id": 48460,
+    "preferred_common_name": "Animals"
+  },
+  "2": {
+    "id": 2,
+    "name": "Chordata",
+    "parent_id": 1,
+    "preferred_common_name": "Chordates"
+  },
+  "40151": {
+    "id": 40151,
+    "name": "Mammalia",
+    "parent_id": 355675,
+    "preferred_common_name": "Mammals"
+  },
+  "41401": {
+    "id": 41401,
+    "name": "Ziphiidae",
+    "parent_id": 1317256,
+    "preferred_common_name": "Beaked Whales"
+  },
+  "41402": {
+    "id": 41402,
+    "name": "Mesoplodon",
+    "parent_id": 41401,
+    "preferred_common_name": "Mesoplodont Beaked Whales"
+  },
+  "41408": {
+    "id": 41408,
+    "name": "Mesoplodon densirostris",
+    "parent_id": 41402,
+    "preferred_common_name": "Dense-beaked Whale"
+  },
+  "41427": {
+    "id": 41427,
+    "name": "Ziphius",
+    "parent_id": 41401,
+    "preferred_common_name": "Goose-beaked Whales"
+  },
+  "41428": {
+    "id": 41428,
+    "name": "Ziphius cavirostris",
+    "parent_id": 41427,
+    "preferred_common_name": "Cuvier's Beaked Whale"
+  },
+  "41434": {
+    "id": 41434,
+    "name": "Physeteridae",
+    "parent_id": 1317258,
+    "preferred_common_name": "True Sperm Whales"
+  },
+  "41435": {
+    "id": 41435,
+    "name": "Physeter",
+    "parent_id": 41434,
+    "preferred_common_name": "True Sperm Whales"
+  },
+  "41437": {
+    "id": 41437,
+    "name": "Phocoenidae",
+    "parent_id": 1317261,
+    "preferred_common_name": "Porpoises"
+  },
+  "41438": {
+    "id": 41438,
+    "name": "Phocoena",
+    "parent_id": 41437,
+    "preferred_common_name": "Typical Porpoises"
+  },
+  "41440": {
+    "id": 41440,
+    "name": "Phocoena phocoena",
+    "parent_id": 41438,
+    "preferred_common_name": "Harbor Porpoise"
+  },
+  "41445": { "id": 41445, "name": "Phocoenoides", "parent_id": 41437, "preferred_common_name": "Phocoenoides" },
+  "41446": {
+    "id": 41446,
+    "name": "Phocoenoides dalli",
+    "parent_id": 41445,
+    "preferred_common_name": "Dall's Porpoise"
+  },
+  "41457": {
+    "id": 41457,
+    "name": "Monodontidae",
+    "parent_id": 1317261,
+    "preferred_common_name": "Narwhals and Belugas"
+  },
+  "41460": {
+    "id": 41460,
+    "name": "Delphinapterus",
+    "parent_id": 41457,
+    "preferred_common_name": "Belugas"
+  },
+  "41461": {
+    "id": 41461,
+    "name": "Delphinapterus leucas",
+    "parent_id": 41460,
+    "preferred_common_name": "Beluga"
+  },
+  "41476": {
+    "id": 41476,
+    "name": "Eschrichtiidae",
+    "parent_id": 424321,
+    "preferred_common_name": "Grey Whales"
+  },
+  "41477": {
+    "id": 41477,
+    "name": "Eschrichtius",
+    "parent_id": 41476,
+    "preferred_common_name": "Grey whales"
+  },
+  "41478": {
+    "id": 41478,
+    "name": "Eschrichtius robustus",
+    "parent_id": 41477,
+    "preferred_common_name": "Gray Whale"
+  },
+  "41479": {
+    "id": 41479,
+    "name": "Delphinidae",
+    "parent_id": 1317261,
+    "preferred_common_name": "Oceanic Dolphins"
+  },
+  "41493": {
+    "id": 41493,
+    "name": "Stenella",
+    "parent_id": 1317267,
+    "preferred_common_name": "Side-striped Dolphins"
+  },
+  "41494": {
+    "id": 41494,
+    "name": "Stenella coeruleoalba",
+    "parent_id": 41493,
+    "preferred_common_name": "Striped Dolphin"
+  },
+  "41520": { "id": 41520, "name": "Orcinus", "parent_id": 41479, "preferred_common_name": "Orcinus" },
+  "41521": {
+    "id": 41521,
+    "name": "Orcinus orca",
+    "parent_id": 41520,
+    "preferred_common_name": "Orca"
+  },
+  "41524": {
+    "id": 41524,
+    "name": "Delphinus",
+    "parent_id": 1317267,
+    "preferred_common_name": "Common Dolphins"
+  },
+  "41526": {
+    "id": 41526,
+    "name": "Delphinus delphis",
+    "parent_id": 41524,
+    "preferred_common_name": "Common Dolphin"
+  },
+  "41535": {
+    "id": 41535,
+    "name": "Lissodelphis",
+    "parent_id": 1317265,
+    "preferred_common_name": "Right Whale Dolphins"
+  },
+  "41537": {
+    "id": 41537,
+    "name": "Lissodelphis borealis",
+    "parent_id": 41535,
+    "preferred_common_name": "Northern Right Whale Dolphin"
+  },
+  "41546": {
+    "id": 41546,
+    "name": "Balaenopteridae",
+    "parent_id": 424321,
+    "preferred_common_name": "Rorquals"
+  },
+  "41547": { "id": 41547, "name": "Balaenoptera", "parent_id": 41546, "preferred_common_name": "Balaenoptera" },
+  "41550": {
+    "id": 41550,
+    "name": "Balaenoptera acutorostrata",
+    "parent_id": 41547,
+    "preferred_common_name": "Common Minke Whale"
+  },
+  "41562": {
+    "id": 41562,
+    "name": "Balaenoptera physalus",
+    "parent_id": 41547,
+    "preferred_common_name": "Fin Whale"
+  },
+  "41565": {
+    "id": 41565,
+    "name": "Megaptera",
+    "parent_id": 41546,
+    "preferred_common_name": "Humpback Whales"
+  },
+  "41566": {
+    "id": 41566,
+    "name": "Megaptera novaeangliae",
+    "parent_id": 41565,
+    "preferred_common_name": "Humpback Whale"
+  },
+  "74890": {
+    "id": 74890,
+    "name": "Physeter macrocephalus",
+    "parent_id": 41435,
+    "preferred_common_name": "Sperm Whale"
+  },
+  "152870": {
+    "id": 152870,
+    "name": "Artiodactyla",
+    "parent_id": 848324,
+    "preferred_common_name": "Even-toed Ungulates and Cetaceans"
+  },
+  "152871": {
+    "id": 152871,
+    "name": "Cetacea",
+    "parent_id": 925158,
+    "preferred_common_name": "Cetaceans"
+  },
+  "355675": {
+    "id": 355675,
+    "name": "Vertebrata",
+    "parent_id": 2,
+    "preferred_common_name": "Vertebrates"
+  },
+  "424321": {
+    "id": 424321,
+    "name": "Mysticeti",
+    "parent_id": 152871,
+    "preferred_common_name": "Baleen Whales"
+  },
+  "424322": {
+    "id": 424322,
+    "name": "Odontoceti",
+    "parent_id": 152871,
+    "preferred_common_name": "Toothed Whales"
+  },
+  "848317": {
+    "id": 848317,
+    "name": "Theria",
+    "parent_id": 40151,
+    "preferred_common_name": "Therians"
+  },
+  "848320": {
+    "id": 848320,
+    "name": "Placentalia",
+    "parent_id": 848317,
+    "preferred_common_name": "Placental Mammals"
+  },
+  "848324": {
+    "id": 848324,
+    "name": "Laurasiatheria",
+    "parent_id": 848320,
+    "preferred_common_name": "Ungulates, Carnivorans, and Allies"
+  },
+  "925158": {
+    "id": 925158,
+    "name": "Whippomorpha",
+    "parent_id": 152870,
+    "preferred_common_name": "Cetaceans and Hippopotamuses"
+  },
+  "1317256": {
+    "id": 1317256,
+    "name": "Ziphioidea",
+    "parent_id": 424322,
+    "preferred_common_name": "Beaked Whales"
+  },
+  "1317258": {
+    "id": 1317258,
+    "name": "Physeteroidea",
+    "parent_id": 424322,
+    "preferred_common_name": "Sperm Whales"
+  },
+  "1317261": {
+    "id": 1317261,
+    "name": "Delphinoidea",
+    "parent_id": 424322,
+    "preferred_common_name": "Oceanic Dolphins and Porpoises"
+  },
+  "1317265": {
+    "id": 1317265,
+    "name": "Lissodelphininae",
+    "parent_id": 41479,
+    "preferred_common_name": "Right Whale Dolphins and allies"
+  },
+  "1317267": {
+    "id": 1317267,
+    "name": "Delphininae",
+    "parent_id": 41479,
+    "preferred_common_name": "Long-nosed Dolphins"
+  },
+  "1317295": { "id": 1317295, "name": "Sagmatias", "parent_id": 1317265, "preferred_common_name": "Sagmatias" },
+  "1368491": {
+    "id": 1368491,
+    "name": "Sagmatias obliquidens",
+    "parent_id": 1317295,
+    "preferred_common_name": "Pacific White-sided Dolphin"
+  },
+  "1453916": {
+    "id": 1453916,
+    "name": "Balaenoptera brydei",
+    "parent_id": 41547,
+    "preferred_common_name": "Bryde's Whale"
+  },
+  "SRKW": {
+    "id": 99941521,
+    "name": "SRKW",
+    "preferred_common_name": "Southern Resident Killer Whale",
+    "parent_id": 41521
+  }
+}

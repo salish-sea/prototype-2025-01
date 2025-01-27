@@ -7,6 +7,7 @@ import type { Geometry } from 'ol/geom';
 import type { ReadOptions } from 'ol/format/Feature';
 import { bbox } from 'ol/loadingstrategy';
 import type { PointInTime } from '../PointInTime';
+import { Query } from '../Query';
 
 type ResultPage<T> = {
   total_results: number;
@@ -20,7 +21,7 @@ type Observation = {
   geojson: {coordinates: [number, number], type: 'Point'};
   geoprivacy: string | null;
   public_positional_accuracy: number;
-  taxon: {common_name: string | null; scientific_name: string};
+  taxon: {name: string; preferred_common_name: string | null};
   taxon_geoprivacy: string | null;
   time_observed_at: string | null;
   uri: string;
@@ -46,7 +47,7 @@ class ObservationPage extends GeoJSON {
         }
       }
       const properties: INaturalistProperties = {
-        kind: obs.taxon.common_name || obs.taxon.scientific_name,
+        kind: obs.taxon.preferred_common_name || obs.taxon.name,
         obscured: obs.geoprivacy === 'obscured' || obs.taxon_geoprivacy === 'obscured',
         observedAt,
         source: 'inaturalist',
@@ -65,18 +66,18 @@ class ObservationPage extends GeoJSON {
 
 export class INaturalistSource extends VectorSource {
   baseURL = 'https://api.inaturalist.org/v2/observations';
-  fieldspec = "(geojson:!t,geoprivacy:!t,public_positional_accuracy:!t,taxon:(name:!t),taxon_geoprivacy:!t,time_observed_at:!t,uri:!t)";
-  taxonId: number;
+  fieldspec = "(geojson:!t,geoprivacy:!t,public_positional_accuracy:!t,taxon:(name:!t,preferred_common_name:!t),taxon_geoprivacy:!t,time_observed_at:!t,uri:!t)";
 
-  constructor({taxon, pit}: {taxon: number; pit: PointInTime}) {
+  constructor({query, pit}: {query: Query; pit: PointInTime}) {
     const url = ([minx, miny, maxx, maxy]: Extent) => {
       const earliest = pit.earliest?.toString();
       const latest = pit.latest?.toString();
-      if (!earliest || !latest)
+      const taxonId = query.taxon.id;
+      if (!earliest || !latest || !taxonId)
         return '';
 
       const url = this.baseURL +
-        `?taxon_id=${this.taxonId}&d1=${earliest}&d2=${latest}` +
+        `?taxon_id=${taxonId}&d1=${earliest}&d2=${latest}` +
         `&nelat=${maxy.toFixed(6)}&nelng=${maxx.toFixed(6)}&swlat=${miny.toFixed(6)}&swlng=${minx.toFixed(6)}` +
         '&geoprivacy=open&taxon_geoprivacy=open' +
         `&fields=${this.fieldspec}&per_page=200`;
@@ -84,7 +85,57 @@ export class INaturalistSource extends VectorSource {
     }
     super({format: new ObservationPage(), strategy: bbox, url});
 
-    this.taxonId = taxon;
     pit.on('change', () => this.refresh());
+    query.on('change', () => this.refresh());
   }
 }
+
+const speciesCountsEndpoint = 'https://api.inaturalist.org/v2/observations/species_counts';
+const speciesCountsFieldspec = '(taxon:(id:!t,name:!t,parent_id:!t,preferred_common_name:!t,ancestors:(id:!t,name:!t,parent_id:!t,preferred_common_name:!t)))';
+
+const queryStringAppend = (base: string, attrs: {[k: string]: string | string[] | number | number[]}) => {
+  let queryString = Object.entries(attrs).map(([key, value]) => {
+    value = Array.isArray(value) ? value.join(',') : value.toString();
+    return `${key}=${value}`;
+  }).join('&');
+  return base + (base.indexOf('?') === -1 ? '?' : '&') + queryString;
+}
+
+export async function fetchSpeciesPresent(taxonID: number, placeID: number) {
+  const url = queryStringAppend(speciesCountsEndpoint, {
+    fields: speciesCountsFieldspec,
+    include_ancestors: 'true',
+    locale: 'en-US',
+    place_id: placeID,
+    preferred_place_id: 1,
+    quality_grade: 'research',
+    taxon_id: taxonID,
+  });
+  const resp = await fetch(url);
+  const body: ResultPage<SpeciesCount> = await resp.json();
+  const taxonByID: {[k: number]: Taxon} = {};
+  for (const {taxon: {ancestors, ...taxon}} of body.results) {
+    taxonByID[taxon.id] = taxon;
+    for (const ancestor of ancestors) {
+      taxonByID[ancestor.id] = ancestor;
+    }
+  }
+  return taxonByID;
+}
+
+export type Taxon = {
+  id: number;
+  name: string; // scientific name
+  parent_id: number;
+  preferred_common_name: string; // en-US
+} | {
+  id: 48460;
+  name: 'Life';
+  parent_id: null;
+  preferred_common_name: 'Life';
+};
+
+type SpeciesCount = {
+  count: number;
+  taxon: Taxon & {ancestors: Taxon[]};
+};

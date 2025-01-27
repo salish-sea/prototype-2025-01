@@ -19,12 +19,14 @@ export default class TimeControl extends Control {
     input.addEventListener('change', e => {
       console.log('time control changed');
       const target = e.target as HTMLInputElement;
+      const value = target.value;
+      if (!value)
+        return;
       try {
-        const time = Temporal.PlainDateTime.from(target.value).toZonedDateTime('PST8PDT').toInstant();
+        const time = Temporal.PlainDateTime.from(value).toZonedDateTime('PST8PDT').toInstant();
         pit.set(time);
       } catch (error) {
-        console.error(`Couldn't parse time '${target.value}': ${error}`);
-        e.preventDefault();
+        console.error(`Couldn't parse time '${value}': ${error}`);
       }
     }, {passive: false});
   }

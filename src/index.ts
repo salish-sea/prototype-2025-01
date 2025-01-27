@@ -14,20 +14,26 @@ import { MaplifySource } from './source/maplify';
 import { PointInTime } from './PointInTime';
 import TimeControl from './control/TimeControl';
 import ObservationsControl from './control/ObservationsControl';
+import { Query } from './Query';
+import TaxonControl from './control/TaxonControl';
 
 useGeographic();
 
 // TODO:
+// - clusters
 // - temporal scale
 // - select iNaturalist taxon
-// - info window
 
 // wsdot key dd816e21-7394-414b-8f6d-57751494b0b1
 
-// https://www.inaturalist.org/observations/258050998
 let location = [-122.450, 47.8];
 
 const pit = new PointInTime();
+const query = new Query('Cetacea');
+
+const link = new Link({replace: true});
+query.set(link.track('q', query.set.bind(query)) || 'Cetacea');
+query.on('change', () => link.update('q', query.value));
 
 declare global {
   var map: Map;
@@ -40,15 +46,13 @@ const view = new View({
   zoom: 9,
 });
 
-export const inaturalistSource = new INaturalistSource({
-  taxon: 152871, // Cetacea
-  pit,
-});
+
+export const inaturalistSource = new INaturalistSource({query, pit});
 const inaturalistLayer = new VectorLayer({
   source: inaturalistSource,
 });
 
-export const sightingSource = new MaplifySource({pit});
+export const sightingSource = new MaplifySource({query, pit});
 
 function clamp(value: number, low: number, high: number) {
   return Math.max(low, Math.min(value, high));
@@ -79,20 +83,17 @@ const sightingLayer = new VectorLayer({
 });
 
 const setTime = pit.set.bind(pit);
-export const link = new Link({replace: true});
-setTime(link.track('t', newValue => {
-  console.log('link t param changed');
-  setTime(newValue);
-}));
+setTime(link.track('t', setTime));
 pit.on('change', () => link.update('t', pit.toNaiveISO()));
 if (!pit.value)
   pit.set(Temporal.Now.instant());
 
 const observationsControl = new ObservationsControl({});
+const taxonControl = new TaxonControl({query});
 
 const map = new Map({
   target: 'map',
-  controls: defaultControls().extend([new TimeControl({pit}), observationsControl]),
+  controls: defaultControls().extend([new TimeControl({pit}), observationsControl, taxonControl]),
   interactions: defaultInteractions().extend([link]),
   layers: [
     new TileLayer({

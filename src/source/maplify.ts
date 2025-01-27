@@ -6,9 +6,11 @@ import { Feature } from 'ol';
 import { Geometry, Point } from 'ol/geom';
 import type { Projection } from 'ol/proj';
 import type { PointInTime } from '../PointInTime';
-import { all, bbox } from 'ol/loadingstrategy';
+import { all } from 'ol/loadingstrategy';
 import {get as getProjection} from 'ol/proj';
 import { observationId } from '../observation';
+import { Query } from '../Query';
+import { taxonAndDescendants, TaxonHandle } from '../Taxon';
 
 type Source = 'CINMS' | 'ocean_alert' | 'rwsas' | 'FARPB' | 'whale_alert';
 
@@ -48,6 +50,13 @@ export type MaplifyProperties = {
 }
 
 class MaplifyFormat extends JSONFeature {
+  query: Query
+
+  constructor({query}: {query: Query}) {
+    super();
+    this.query = query;
+  }
+
   protected readFeatureFromObject(object: Result, options?: import("ol/format/Feature").ReadOptions): Feature<Geometry> | Feature<Geometry>[] {
     const feature = new Feature();
     const properties: MaplifyProperties = {
@@ -63,7 +72,11 @@ class MaplifyFormat extends JSONFeature {
   }
 
   protected readFeaturesFromObject(object: APIResponse, options?: import("ol/format/Feature").ReadOptions): Feature<Geometry>[] {
-    return object.results.map(result => this.readFeatureFromObject(result, options)).flat();
+    const targetTaxa = new Set(taxonAndDescendants(this.query.taxon).map(taxon => taxon.name));
+    return object.results.
+      filter(result => targetTaxa.has(result.scientific_name)).
+      map(result => this.readFeatureFromObject(result, options)).
+      flat();
   }
 
   protected readProjectionFromObject(object: any): import("ol/proj/Projection").default {
@@ -74,7 +87,7 @@ class MaplifyFormat extends JSONFeature {
 export class MaplifySource extends VectorSource {
   pit: PointInTime;
 
-  constructor({pit}: {pit: PointInTime}) {
+  constructor({query, pit}: {query: Query; pit: PointInTime}) {
     const url = ([minx, miny, maxx, maxy]: Extent) => {
       if (!pit.earliest || !pit.latest)
         return '';
@@ -88,7 +101,7 @@ export class MaplifySource extends VectorSource {
         `?start=${pit.earliest}&end=${pit.latest}` +
         `&BBOX=${minx.toFixed(3)},${miny.toFixed(3)},${maxx.toFixed(3)},${maxy.toFixed(3)}`;
     };
-    const format = new MaplifyFormat();
+    const format = new MaplifyFormat({query});
     const loader = (extent: Extent, resolution: number, projection: Projection, success: any, failure: any) => {
       const endpoint = url(extent);
       if (!endpoint)
@@ -104,8 +117,7 @@ export class MaplifySource extends VectorSource {
     };
     super({format, loader, strategy: all, url});
     this.pit = pit;
-    pit.on('change', () => {
-      this.refresh();
-    });
+    pit.on('change', () => this.refresh());
+    query.on('change', () => this.refresh());
   }
 }

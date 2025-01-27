@@ -12,6 +12,9 @@
   "author": "Peter Abrahamsen",
   "license": "MIT",
   "description": "",
+  "bin": {
+    "fetch-taxa": "./dist/fetch-taxa.js"
+  },
   "devDependencies": {
     "@types/colormap": "^2.3.4",
     "temporal-polyfill": "^0.2.5",
