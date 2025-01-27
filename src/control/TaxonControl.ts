@@ -2,7 +2,13 @@ import { Control } from "ol/control";
 import { Query } from "../Query";
 import { taxonByName } from "../Taxon";
 
-const options = ['Cetacea', 'Orcinus orca', 'SRKW'].map(name => [name, taxonByName[name].preferred_common_name]);
+const options = [
+  'Cetacea',
+  'Eschrichtius robustus',
+  'Megaptera novaeangliae',
+  'Orcinus orca',
+  'SRKW'
+].map(name => [name, taxonByName[name].preferred_common_name]);
 
 export default class TaxonControl extends Control {
   constructor({query}: {query: Query}) {

@@ -10,7 +10,7 @@ import { all } from 'ol/loadingstrategy';
 import {get as getProjection} from 'ol/proj';
 import { observationId } from '../observation';
 import { Query } from '../Query';
-import { taxonAndDescendants, TaxonHandle } from '../Taxon';
+import { taxonAndDescendants } from '../Taxon';
 
 type Source = 'CINMS' | 'ocean_alert' | 'rwsas' | 'FARPB' | 'whale_alert';
 

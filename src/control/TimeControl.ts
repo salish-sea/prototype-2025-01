@@ -29,5 +29,9 @@ export default class TimeControl extends Control {
         console.error(`Couldn't parse time '${value}': ${error}`);
       }
     }, {passive: false});
+
+    pit.on('change', () => {
+      input.value = pit.toNaiveISO() || '';
+    });
   }
 }

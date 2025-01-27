@@ -16,6 +16,7 @@ import TimeControl from './control/TimeControl';
 import ObservationsControl from './control/ObservationsControl';
 import { Query } from './Query';
 import TaxonControl from './control/TaxonControl';
+import { FeatureLike } from 'ol/Feature';
 
 useGeographic();
 
@@ -46,49 +47,44 @@ const view = new View({
   zoom: 9,
 });
 
+const observationStyle = (feature: FeatureLike) => {
+  const observedAt: Temporal.Instant = feature.get('observedAt');
+  const delta = pit.value?.until(observedAt) || new Temporal.Duration();
+  const absDeltaHours = Math.abs(delta.total('hours'));
+  const hue = delta.sign < 0 ? 280 : 100;
+  const opacity = Math.max(0.2, Math.min(1, 0.5 * Math.pow(absDeltaHours, -0.5))); // power law, 1 hour delta = 50% opacity
+  return new Style({
+    image: new Circle({
+      fill: new Fill({color: `hsl(${hue} 50% 50% / ${opacity})`}),
+      stroke: delta.sign === 0 ? new Stroke({color: 'yellow', width: 2}) : undefined,
+      radius: 5,
+    })
+  });
+};
 
 export const inaturalistSource = new INaturalistSource({query, pit});
 const inaturalistLayer = new VectorLayer({
   source: inaturalistSource,
+  style: observationStyle,
 });
 
 export const sightingSource = new MaplifySource({query, pit});
 
-function clamp(value: number, low: number, high: number) {
-  return Math.max(low, Math.min(value, high));
-}
-
-const markerStyle = ({hue, opacity}: {hue: number, opacity: number}) => new Style({
-  image: new Circle({
-    fill: new Fill({color: `hsl(${hue.toFixed(0)} 50% 50% / ${opacity.toFixed(2)})`}),
-    radius: 5,
-  }),
-});
-
 const sightingLayer = new VectorLayer({
   source: sightingSource,
-  style: (feature) => {
-    const created: Temporal.Instant = feature.get('observedAt');
-    const delta = pit.value?.until(created) || new Temporal.Duration();
-    const absDeltaHours = Math.abs(delta.total('hours'));
-    const hue = delta.sign < 0 ? 280 : 100;
-    const opacity = Math.min(1, 0.5 * Math.pow(absDeltaHours, -0.5)); // power law, 1 hour delta = 50% opacity
-    return new Style({
-      image: new Circle({
-        fill: new Fill({color: `hsl(${hue} 50% 50% / ${opacity})`}),
-        radius: 5,
-      })
-    });
-  },
+  style: observationStyle,
 });
 
 const setTime = pit.set.bind(pit);
 setTime(link.track('t', setTime));
-pit.on('change', () => link.update('t', pit.toNaiveISO()));
+pit.on('change', () => {
+  link.update('t', pit.toNaiveISO());
+  sightingSource.changed();
+});
 if (!pit.value)
   pit.set(Temporal.Now.instant());
 
-const observationsControl = new ObservationsControl({});
+const observationsControl = new ObservationsControl({pit});
 const taxonControl = new TaxonControl({query});
 
 const map = new Map({
