@@ -19,6 +19,7 @@ import TaxonControl from './control/TaxonControl';
 import { FeatureLike } from 'ol/Feature';
 import { TimeScale } from './TimeScale';
 import { TimeScaleControl } from './control/TimeScaleControl';
+import '@formatjs/intl-durationformat/polyfill'
 
 useGeographic();
 
