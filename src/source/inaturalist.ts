@@ -8,6 +8,7 @@ import type { ReadOptions } from 'ol/format/Feature';
 import { bbox } from 'ol/loadingstrategy';
 import type { PointInTime } from '../PointInTime';
 import { Query } from '../Query';
+import { TimeScale } from '../TimeScale';
 
 type ResultPage<T> = {
   total_results: number;
@@ -68,13 +69,15 @@ export class INaturalistSource extends VectorSource {
   baseURL = 'https://api.inaturalist.org/v2/observations';
   fieldspec = "(geojson:!t,geoprivacy:!t,public_positional_accuracy:!t,taxon:(name:!t,preferred_common_name:!t),taxon_geoprivacy:!t,time_observed_at:!t,uri:!t)";
 
-  constructor({query, pit}: {query: Query; pit: PointInTime}) {
+  constructor({query, pit, timeScale}: {query: Query; pit: PointInTime, timeScale: TimeScale}) {
     const url = ([minx, miny, maxx, maxy]: Extent) => {
-      const earliest = pit.earliest?.toString();
-      const latest = pit.latest?.toString();
+      const targetDate = pit.toPlainDate();
       const taxonId = query.taxon.id;
-      if (!earliest || !latest || !taxonId)
+      if (!targetDate || !taxonId)
         return '';
+
+      const earliest = targetDate.subtract(timeScale.value);
+      const latest = targetDate.add(timeScale.value);
 
       const url = this.baseURL +
         `?taxon_id=${taxonId}&d1=${earliest}&d2=${latest}` +
@@ -87,6 +90,7 @@ export class INaturalistSource extends VectorSource {
 
     pit.on('change', () => this.refresh());
     query.on('change', () => this.refresh());
+    timeScale.on('change', () => this.refresh());
   }
 }
 

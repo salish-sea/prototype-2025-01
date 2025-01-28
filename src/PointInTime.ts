@@ -31,11 +31,7 @@ export class PointInTime extends Observable {
     return this.value ? this.value.toZonedDateTimeISO('PST8PDT').toPlainDateTime().toString({ smallestUnit: 'minute' }) : null;
   }
 
-  get earliest() {
-    return this.value?.subtract(oneDay).toZonedDateTimeISO('PST8PDT').toPlainDate() || null;
-  }
-
-  get latest() {
-    return this.value?.add(oneDay).toZonedDateTimeISO('PST8PDT').toPlainDate() || null;
+  toPlainDate(): Temporal.PlainDate | null {
+    return this.value?.toZonedDateTimeISO('PST8PDT').toPlainDate() || null;
   }
 }

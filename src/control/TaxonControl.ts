@@ -33,8 +33,7 @@ export default class TaxonControl extends Control {
     input.addEventListener('change', e => {
       console.log('taxon control changed');
       const target = e.target as HTMLSelectElement;
-      const value = target.value;
-      query.set(value);
+      query.set(target.value);
     }, {passive: true});
   }
 }

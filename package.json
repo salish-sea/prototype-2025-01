@@ -16,7 +16,9 @@
     "fetch-taxa": "./dist/fetch-taxa.js"
   },
   "devDependencies": {
+    "@apollo/client": "^3.12.8",
     "@types/colormap": "^2.3.4",
+    "graphql": "^16.10.0",
     "temporal-polyfill": "^0.2.5",
     "ts-loader": "^9.5.1",
     "typescript": "^5.7.3",

@@ -4,7 +4,7 @@ import View from 'ol/View';
 import { useGeographic } from 'ol/proj';
 import {Circle, Fill, Stroke, Style} from 'ol/style.js';
 import VectorLayer from 'ol/layer/Vector';
-import { Source, XYZ } from 'ol/source';
+import { XYZ } from 'ol/source';
 import {defaults as defaultControls} from 'ol/control.js';
 import Link from 'ol/interaction/Link.js';
 import {defaults as defaultInteractions} from 'ol/interaction/defaults';
@@ -17,30 +17,30 @@ import ObservationsControl from './control/ObservationsControl';
 import { Query } from './Query';
 import TaxonControl from './control/TaxonControl';
 import { FeatureLike } from 'ol/Feature';
+import { TimeScale } from './TimeScale';
+import { TimeScaleControl } from './control/TimeScaleControl';
 
 useGeographic();
 
 // TODO:
 // - clusters
-// - temporal scale
-// - select iNaturalist taxon
+// - orcasound bouts (pending data work and API)
 
 // wsdot key dd816e21-7394-414b-8f6d-57751494b0b1
 
 let location = [-122.450, 47.8];
 
 const pit = new PointInTime();
+const timeScale = new TimeScale(Temporal.Duration.from('P2D'));
 const query = new Query('Cetacea');
 
 const link = new Link({replace: true});
 query.set(link.track('q', query.set.bind(query)) || 'Cetacea');
 query.on('change', () => link.update('q', query.value));
 
-declare global {
-  var map: Map;
-  var view: View;
-  var source: Source;
-}
+timeScale.set(link.track('p', timeScale.set.bind(timeScale)));
+timeScale.on('change', () => link.update('p', timeScale.value.toString()));
+link.update('p', timeScale.value.toString());
 
 const view = new View({
   center: location,
@@ -50,9 +50,9 @@ const view = new View({
 const observationStyle = (feature: FeatureLike) => {
   const observedAt: Temporal.Instant = feature.get('observedAt');
   const delta = pit.value?.until(observedAt) || new Temporal.Duration();
-  const absDeltaHours = Math.abs(delta.total('hours'));
+  const proportionOfScale = delta.abs().total('seconds') / timeScale.value.total('seconds');
   const hue = delta.sign < 0 ? 280 : 100;
-  const opacity = Math.max(0.2, Math.min(1, 0.5 * Math.pow(absDeltaHours, -0.5))); // power law, 1 hour delta = 50% opacity
+  const opacity = Math.min(1, 0.3 * Math.pow(Math.min(1, proportionOfScale), -0.6));
   return new Style({
     image: new Circle({
       fill: new Fill({color: `hsl(${hue} 50% 50% / ${opacity})`}),
@@ -62,13 +62,13 @@ const observationStyle = (feature: FeatureLike) => {
   });
 };
 
-export const inaturalistSource = new INaturalistSource({query, pit});
+export const inaturalistSource = new INaturalistSource({query, pit, timeScale});
 const inaturalistLayer = new VectorLayer({
   source: inaturalistSource,
   style: observationStyle,
 });
 
-export const sightingSource = new MaplifySource({query, pit});
+export const sightingSource = new MaplifySource({query, pit, timeScale});
 
 const sightingLayer = new VectorLayer({
   source: sightingSource,
@@ -86,10 +86,11 @@ if (!pit.value)
 
 const observationsControl = new ObservationsControl({pit});
 const taxonControl = new TaxonControl({query});
+const timeScaleControl = new TimeScaleControl({timeScale});
 
 const map = new Map({
   target: 'map',
-  controls: defaultControls().extend([new TimeControl({pit}), observationsControl, taxonControl]),
+  controls: defaultControls().extend([new TimeControl({pit}), observationsControl, taxonControl, timeScaleControl]),
   interactions: defaultInteractions().extend([link]),
   layers: [
     new TileLayer({
@@ -116,6 +117,3 @@ map.on('click', event => {
     return;
   observationsControl.showObservations(features);
 });
-globalThis.map = map;
-globalThis.view = view;
-globalThis.source = sightingSource;

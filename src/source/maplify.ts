@@ -11,6 +11,7 @@ import {get as getProjection} from 'ol/proj';
 import { observationId } from '../observation';
 import { Query } from '../Query';
 import { taxonAndDescendants } from '../Taxon';
+import { TimeScale } from '../TimeScale';
 
 type Source = 'CINMS' | 'ocean_alert' | 'rwsas' | 'FARPB' | 'whale_alert';
 
@@ -87,10 +88,13 @@ class MaplifyFormat extends JSONFeature {
 export class MaplifySource extends VectorSource {
   pit: PointInTime;
 
-  constructor({query, pit}: {query: Query; pit: PointInTime}) {
+  constructor({query, pit, timeScale}: {query: Query; pit: PointInTime; timeScale: TimeScale}) {
     const url = ([minx, miny, maxx, maxy]: Extent) => {
-      if (!pit.earliest || !pit.latest)
+      const targetDate = pit.toPlainDate();
+      if (!targetDate)
         return '';
+      const earliest = targetDate.subtract(timeScale.value);
+      const latest = targetDate.add(timeScale.value);
 
       minx = Math.max(minx, -180);
       miny = Math.max(miny, -90);
@@ -98,7 +102,7 @@ export class MaplifySource extends VectorSource {
       maxy = Math.min(maxy, 90);
 
       return 'https://maplify.com/waseak/php/search-all-sightings.php' +
-        `?start=${pit.earliest}&end=${pit.latest}` +
+        `?start=${earliest}&end=${latest}` +
         `&BBOX=${minx.toFixed(3)},${miny.toFixed(3)},${maxx.toFixed(3)},${maxy.toFixed(3)}`;
     };
     const format = new MaplifyFormat({query});
@@ -119,5 +123,6 @@ export class MaplifySource extends VectorSource {
     this.pit = pit;
     pit.on('change', () => this.refresh());
     query.on('change', () => this.refresh());
+    timeScale.on('change', () => this.refresh());
   }
 }
