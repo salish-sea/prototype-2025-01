@@ -9,7 +9,7 @@ import {defaults as defaultControls} from 'ol/control.js';
 import Link from 'ol/interaction/Link.js';
 import {defaults as defaultInteractions} from 'ol/interaction/defaults';
 import { Temporal } from 'temporal-polyfill';
-import { INaturalistSource } from './source/inaturalist';
+import { INaturalistSource, fetchSpeciesPresent } from './source/inaturalist';
 import { MaplifySource } from './source/maplify';
 import { PointInTime } from './PointInTime';
 import TimeControl from './control/TimeControl';
@@ -20,6 +20,9 @@ import { FeatureLike } from 'ol/Feature';
 import { TimeScale } from './TimeScale';
 import { TimeScaleControl } from './control/TimeScaleControl';
 import '@formatjs/intl-durationformat/polyfill'
+import VectorSource from 'ol/source/Vector';
+import GeoJSON from 'ol/format/GeoJSON';
+import { all } from 'ol/loadingstrategy';
 
 useGeographic();
 
@@ -63,13 +66,22 @@ const observationStyle = (feature: FeatureLike) => {
   });
 };
 
-export const inaturalistSource = new INaturalistSource({query, pit, timeScale});
+const herringSource = new VectorSource({
+  format: new GeoJSON(),
+  strategy: all,
+  url: './herring-spawning.geojson',
+});
+const herringLayer = new VectorLayer({
+  source: herringSource,
+});
+
+const inaturalistSource = new INaturalistSource({query, pit, timeScale});
 const inaturalistLayer = new VectorLayer({
   source: inaturalistSource,
   style: observationStyle,
 });
 
-export const sightingSource = new MaplifySource({query, pit, timeScale});
+const sightingSource = new MaplifySource({query, pit, timeScale});
 
 const sightingLayer = new VectorLayer({
   source: sightingSource,
@@ -107,6 +119,7 @@ const map = new Map({
       //   mapType: 'terrain',
       // }),
     }),
+    herringLayer,
     inaturalistLayer,
     sightingLayer,
   ],
@@ -118,3 +131,8 @@ map.on('click', event => {
     return;
   observationsControl.showObservations(features);
 });
+
+declare global {
+  var fetchSpeciesPresent: any;
+}
+window.fetchSpeciesPresent = fetchSpeciesPresent;

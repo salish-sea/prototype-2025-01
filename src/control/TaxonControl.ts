@@ -3,6 +3,9 @@ import { Query } from "../Query";
 import { taxonByName } from "../Taxon";
 
 const options = [
+  'Otariidae',
+  'Zalophus californianus',
+  'Eumetopias jubatus',
   'Cetacea',
   'Eschrichtius robustus',
   'Megaptera novaeangliae',

@@ -200,6 +200,96 @@
     "parent_id": 41565,
     "preferred_common_name": "Humpback Whale"
   },
+  "41573": {
+    "id": 41573,
+    "name": "Carnivora",
+    "parent_id": 848324,
+    "preferred_common_name": "Carnivorans"
+  },
+  "41687": {
+    "id": 41687,
+    "name": "Phocidae",
+    "parent_id": 372843,
+    "preferred_common_name": "Earless Seals"
+  },
+  "41707": {
+    "id": 41707,
+    "name": "Phoca",
+    "parent_id": 41687,
+    "preferred_common_name": "common seals"
+  },
+  "41708": {
+    "id": 41708,
+    "name": "Phoca vitulina",
+    "parent_id": 41707,
+    "preferred_common_name": "Harbor Seal"
+  },
+  "41727": {
+    "id": 41727,
+    "name": "Mirounga",
+    "parent_id": 41687,
+    "preferred_common_name": "Elephant Seals"
+  },
+  "41728": {
+    "id": 41728,
+    "name": "Mirounga angustirostris",
+    "parent_id": 41727,
+    "preferred_common_name": "Northern Elephant Seal"
+  },
+  "41736": {
+    "id": 41736,
+    "name": "Otariidae",
+    "parent_id": 372843,
+    "preferred_common_name": "Eared Seals"
+  },
+  "41737": {
+    "id": 41737,
+    "name": "Zalophus",
+    "parent_id": 41736,
+    "preferred_common_name": "California, Galápagos, and Japanese Sea Lions"
+  },
+  "41740": {
+    "id": 41740,
+    "name": "Zalophus californianus",
+    "parent_id": 41737,
+    "preferred_common_name": "California Sea Lion"
+  },
+  "41741": {
+    "id": 41741,
+    "name": "Arctocephalus",
+    "parent_id": 41736,
+    "preferred_common_name": "Southern Fur Seals"
+  },
+  "41746": {
+    "id": 41746,
+    "name": "Arctocephalus townsendi",
+    "parent_id": 41741,
+    "preferred_common_name": "Guadalupe Fur Seal"
+  },
+  "41754": {
+    "id": 41754,
+    "name": "Eumetopias",
+    "parent_id": 41736,
+    "preferred_common_name": "Steller Sea Lions"
+  },
+  "41755": {
+    "id": 41755,
+    "name": "Eumetopias jubatus",
+    "parent_id": 41754,
+    "preferred_common_name": "Steller Sea Lion"
+  },
+  "41756": {
+    "id": 41756,
+    "name": "Callorhinus",
+    "parent_id": 41736,
+    "preferred_common_name": "Northern Fur Seals"
+  },
+  "41757": {
+    "id": 41757,
+    "name": "Callorhinus ursinus",
+    "parent_id": 41756,
+    "preferred_common_name": "Northern Fur Seal"
+  },
   "74890": {
     "id": 74890,
     "name": "Physeter macrocephalus",
@@ -223,6 +313,12 @@
     "name": "Vertebrata",
     "parent_id": 2,
     "preferred_common_name": "Vertebrates"
+  },
+  "372843": {
+    "id": 372843,
+    "name": "Phocoidea",
+    "parent_id": 41573,
+    "preferred_common_name": "Pinnipeds"
   },
   "424321": {
     "id": 424321,

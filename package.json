@@ -12,14 +12,9 @@
   "author": "Peter Abrahamsen",
   "license": "MIT",
   "description": "",
-  "bin": {
-    "fetch-taxa": "./dist/fetch-taxa.js"
-  },
   "devDependencies": {
-    "@apollo/client": "^3.12.8",
     "@formatjs/intl-durationformat": "^0.7.2",
     "@types/colormap": "^2.3.4",
-    "graphql": "^16.10.0",
     "ol": "^10.3.1",
     "temporal-polyfill": "^0.2.5",
     "ts-loader": "^9.5.1",
