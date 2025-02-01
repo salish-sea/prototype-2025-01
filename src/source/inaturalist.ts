@@ -1,6 +1,6 @@
 import type { Extent } from 'ol/extent';
 import { Temporal } from 'temporal-polyfill';
-import { Vector as VectorSource } from 'ol/source';
+import { ImageTile, Vector as VectorSource } from 'ol/source';
 import GeoJSON from 'ol/format/GeoJSON';
 import { Feature } from 'ol';
 import type { Geometry } from 'ol/geom';
@@ -9,6 +9,7 @@ import { bbox } from 'ol/loadingstrategy';
 import type { PointInTime } from '../PointInTime';
 import { Query } from '../Query';
 import { TimeScale } from '../TimeScale';
+import { LoaderOptions } from 'ol/source/DataTile';
 
 type ResultPage<T> = {
   total_results: number;
@@ -65,7 +66,7 @@ class ObservationPage extends GeoJSON {
   }
 }
 
-export class INaturalistSource extends VectorSource {
+export class Features extends VectorSource {
   baseURL = 'https://api.inaturalist.org/v2/observations';
   fieldspec = "(geojson:!t,geoprivacy:!t,public_positional_accuracy:!t,taxon:(name:!t,preferred_common_name:!t),taxon_geoprivacy:!t,time_observed_at:!t,uri:!t)";
 
@@ -93,6 +94,22 @@ export class INaturalistSource extends VectorSource {
     timeScale.on('change', () => this.refresh());
   }
 }
+
+export class Tiles extends ImageTile {
+  constructor({query}: {query: Query}) {
+    const url = (z: number, x: number, y: number, options: LoaderOptions) => {
+      return queryStringAppend(`https://tiles.inaturalist.org/v2/grid/${z}/${x}/${y}.png`, {
+        geoprivacy: 'open',
+        acc_below: 500,
+        tile_size: 256,
+        taxon_id: query.taxon.id,
+      });
+    }
+    super({projection: 'EPSG:3857', tileSize: [256, 256], url});
+    query.on('change', () => this.changed());
+  }
+}
+
 
 const speciesCountsEndpoint = 'https://api.inaturalist.org/v2/observations/species_counts';
 const speciesCountsFieldspec = '(taxon:(id:!t,name:!t,parent_id:!t,preferred_common_name:!t,ancestors:(id:!t,name:!t,parent_id:!t,preferred_common_name:!t)))';

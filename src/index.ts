@@ -9,7 +9,7 @@ import {defaults as defaultControls} from 'ol/control.js';
 import Link from 'ol/interaction/Link.js';
 import {defaults as defaultInteractions} from 'ol/interaction/defaults';
 import { Temporal } from 'temporal-polyfill';
-import { INaturalistSource, fetchSpeciesPresent } from './source/inaturalist';
+import { Features as INaturalistFeatures, Tiles as INaturalistTiles, fetchSpeciesPresent } from './source/inaturalist';
 import { MaplifySource } from './source/maplify';
 import { PointInTime } from './PointInTime';
 import TimeControl from './control/TimeControl';
@@ -23,6 +23,8 @@ import '@formatjs/intl-durationformat/polyfill'
 import VectorSource from 'ol/source/Vector';
 import GeoJSON from 'ol/format/GeoJSON';
 import { all } from 'ol/loadingstrategy';
+import { Ferries, VesselLocations } from './source/wsf';
+import TextStyle from 'ol/style/Text';
 
 useGeographic();
 
@@ -30,7 +32,7 @@ useGeographic();
 // - clusters
 // - orcasound bouts (pending data work and API)
 
-// wsdot key dd816e21-7394-414b-8f6d-57751494b0b1
+const wsdotKey = 'dd816e21-7394-414b-8f6d-57751494b0b1';
 
 let location = [-122.450, 47.8];
 
@@ -75,7 +77,7 @@ const herringLayer = new VectorLayer({
   source: herringSource,
 });
 
-const inaturalistSource = new INaturalistSource({query, pit, timeScale});
+const inaturalistSource = new INaturalistFeatures({query, pit, timeScale});
 const inaturalistLayer = new VectorLayer({
   source: inaturalistSource,
   style: observationStyle,
@@ -101,6 +103,18 @@ const observationsControl = new ObservationsControl({pit});
 const taxonControl = new TaxonControl({query});
 const timeScaleControl = new TimeScaleControl({timeScale});
 
+const iNaturalistTiles = new INaturalistTiles({query});
+const iNaturalistTileLayer = new TileLayer({
+  opacity: 0.3,
+  source: iNaturalistTiles,
+});
+
+const ferrySource = new Ferries(wsdotKey);
+const ferryLayer = new VectorLayer({
+  source: ferrySource,
+  style: () => new Style({text: new TextStyle({text: '⛴️'})}),
+});
+
 const map = new Map({
   target: 'map',
   controls: defaultControls().extend([new TimeControl({pit}), observationsControl, taxonControl, timeScaleControl]),
@@ -119,9 +133,11 @@ const map = new Map({
       //   mapType: 'terrain',
       // }),
     }),
+    iNaturalistTileLayer,
     herringLayer,
     inaturalistLayer,
     sightingLayer,
+    ferryLayer,
   ],
   view,
 });
