@@ -29,6 +29,8 @@ import {platformModifierKeyOnly} from 'ol/events/condition.js';
 import Select from 'ol/interaction/Select.js';
 import DragBox from 'ol/interaction/DragBox.js';
 import {transformExtent} from 'ol/proj';
+import 'ol/ol.css';
+import './index.css';
 
 useGeographic();
 
@@ -137,8 +139,14 @@ const ferryLayer = new VectorLayer({
   style: () => new Style({text: new TextStyle({text: '⛴️'})}),
 });
 
+const mainElement = document.createElement('main');
+const mapElement = document.createElement('div');
+mapElement.id = 'map';
+mainElement.appendChild(mapElement);
+document.body.appendChild(mainElement);
+
 const map = new Map({
-  target: 'map',
+  target: mapElement,
   controls: defaultControls().extend([new TimeControl({pit}), observationsControl, taxonControl, timeScaleControl]),
   interactions: defaultInteractions().extend([link, select, dragBox]),
   layers: [

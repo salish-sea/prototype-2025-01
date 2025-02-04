@@ -15,7 +15,10 @@
   "devDependencies": {
     "@formatjs/intl-durationformat": "^0.7.2",
     "@types/colormap": "^2.3.4",
+    "css-loader": "^7.1.2",
+    "html-webpack-plugin": "5.6.3",
     "ol": "^10.3.1",
+    "style-loader": "^4.0.0",
     "temporal-polyfill": "^0.2.5",
     "ts-loader": "^9.5.1",
     "typescript": "^5.7.3",
