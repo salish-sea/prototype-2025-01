@@ -5,6 +5,8 @@ import { VesselLocationProperties } from "./source/wsf";
 
 type DatasourceProperties = INaturalistProperties | MaplifyProperties | VesselLocationProperties;
 type RequiredProperties = {
+  body: string | null;
+  count: number;
   kind: string;
   observedAt: Temporal.Instant | null;
   source: string;

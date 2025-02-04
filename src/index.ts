@@ -23,8 +23,12 @@ import '@formatjs/intl-durationformat/polyfill'
 import VectorSource from 'ol/source/Vector';
 import GeoJSON from 'ol/format/GeoJSON';
 import { all } from 'ol/loadingstrategy';
-import { Ferries, VesselLocations } from './source/wsf';
+import { Ferries } from './source/wsf';
 import TextStyle from 'ol/style/Text';
+import {platformModifierKeyOnly} from 'ol/events/condition.js';
+import Select from 'ol/interaction/Select.js';
+import DragBox from 'ol/interaction/DragBox.js';
+import {transformExtent} from 'ol/proj';
 
 useGeographic();
 
@@ -99,7 +103,24 @@ pit.on('change', () => {
 if (!pit.value)
   pit.set(Temporal.Now.instant());
 
+const select = new Select();
+const dragBox = new DragBox({
+  condition: platformModifierKeyOnly,
+});
+
 const observationsControl = new ObservationsControl({pit});
+const selection = select.getFeatures();
+const showObservations = () => {
+  const features = selection.getArray();
+  if (features.length > 0) {
+    observationsControl.showObservations(features);
+  } else {
+    observationsControl.showObservations([inaturalistSource, sightingSource].flatMap(source => source.getFeatures()));
+  }
+};
+selection.on(['add', 'remove'], showObservations);
+sightingSource.on('featuresloadend', showObservations);
+inaturalistSource.on('featuresloadend', showObservations);
 const taxonControl = new TaxonControl({query});
 const timeScaleControl = new TimeScaleControl({timeScale});
 
@@ -118,7 +139,7 @@ const ferryLayer = new VectorLayer({
 const map = new Map({
   target: 'map',
   controls: defaultControls().extend([new TimeControl({pit}), observationsControl, taxonControl, timeScaleControl]),
-  interactions: defaultInteractions().extend([link]),
+  interactions: defaultInteractions().extend([link, select, dragBox]),
   layers: [
     new TileLayer({
       source: new XYZ({
@@ -141,12 +162,22 @@ const map = new Map({
   ],
   view,
 });
-map.on('click', event => {
-  const features = map.getFeaturesAtPixel(event.pixel);
-  if (features.length === 0)
-    return;
-  observationsControl.showObservations(features);
+
+dragBox.on('boxend', () => {
+  const boxExtent = transformExtent(dragBox.getGeometry().getExtent(), 'EPSG:3857', 'EPSG:4326');
+  const features = sightingSource.getFeaturesInExtent(boxExtent).
+    concat(inaturalistSource.getFeaturesInExtent(boxExtent));
+  selection.clear();
+  selection.extend(features);
+  selection.changed();
 });
+
+// map.on('click', event => {
+//   const features = map.getFeaturesAtPixel(event.pixel);
+//   if (features.length === 0)
+//     return;
+//   observationsControl.showObservations(features);
+// });
 
 declare global {
   var fetchSpeciesPresent: any;

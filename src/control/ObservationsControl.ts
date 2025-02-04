@@ -2,6 +2,8 @@ import { Control } from "ol/control";
 import { FeatureLike } from "ol/Feature";
 import { ObservationProperties } from "../observation";
 import { PointInTime } from "../PointInTime";
+import VectorSource from "ol/source/Vector";
+import type Select from "ol/interaction/Select";
 
 export default class ObservationsControl extends Control {
   constructor({pit}: {pit: PointInTime}) {
@@ -25,11 +27,14 @@ export default class ObservationsControl extends Control {
   showObservations(observations: FeatureLike[]) {
     this.element.innerHTML = '<div>' +
       observations.map(obs => {
-        const {kind, observedAt} = obs.getProperties() as ObservationProperties;
+        let {body, count, kind, observedAt} = obs.getProperties() as ObservationProperties;
         const time = observedAt ? `<a href='focusTime'><time datetime="${observedAt.toString()}">${observedAt.toLocaleString('en-US', {timeZone: 'PST8PDT'})}</time></a>`
           : 'undated';
-        return `<div>${kind}: ${time}</div>`;
-      }).join('\r') +
+        body = body?.trim() || '';
+        body = body.replace(new RegExp('^(\s*<br>)*'), '');
+        const bodyHTML = body ? `<dd>${body}</dd>` : '';
+        return `<dt>${time}: ${kind} (${count})</dt>${bodyHTML}`;
+      }).join('\r<br>\r') +
       '</div>';
   }
 }

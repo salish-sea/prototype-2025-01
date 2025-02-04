@@ -44,6 +44,8 @@ type APIResponse = {
 }
 
 export type MaplifyProperties = {
+  body: string;
+  count: number;
   kind: string;
   observedAt: Temporal.Instant;
   source: Source;
@@ -61,6 +63,8 @@ class MaplifyFormat extends JSONFeature {
   protected readFeatureFromObject(object: Result, options?: import("ol/format/Feature").ReadOptions): Feature<Geometry> | Feature<Geometry>[] {
     const feature = new Feature();
     const properties: MaplifyProperties = {
+      body: object.comments,
+      count: object.number_sighted,
       kind: object.name,
       observedAt: Temporal.PlainDateTime.from(object.created).toZonedDateTime('GMT').toInstant(),
       source: object.source,
@@ -74,6 +78,7 @@ class MaplifyFormat extends JSONFeature {
 
   protected readFeaturesFromObject(object: APIResponse, options?: import("ol/format/Feature").ReadOptions): Feature<Geometry>[] {
     const targetTaxa = new Set(taxonAndDescendants(this.query.taxon).map(taxon => taxon.name));
+    console.log(object.results[0]);
     return object.results.
       filter(result => targetTaxa.has(result.scientific_name)).
       map(result => this.readFeatureFromObject(result, options)).

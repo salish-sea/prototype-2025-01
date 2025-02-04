@@ -20,6 +20,7 @@ type ResultPage<T> = {
 
 type Observation = {
   id: number;
+  description: string | null;
   geojson: {coordinates: [number, number], type: 'Point'};
   geoprivacy: string | null;
   public_positional_accuracy: number;
@@ -30,6 +31,8 @@ type Observation = {
 }
 
 export type INaturalistProperties = {
+  body: string | null;
+  count: number;
   kind: string;
   obscured: boolean;
   observedAt: Temporal.Instant | null;
@@ -49,6 +52,8 @@ class ObservationPage extends GeoJSON {
         }
       }
       const properties: INaturalistProperties = {
+        body: obs.description,
+        count: 1,
         kind: obs.taxon.preferred_common_name || obs.taxon.name,
         obscured: obs.geoprivacy === 'obscured' || obs.taxon_geoprivacy === 'obscured',
         observedAt,

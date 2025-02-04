@@ -21,7 +21,7 @@ export class TimeScaleControl extends Control {
     for (const duration of durations) {
       const option = document.createElement('option');
       option.value = duration.toString();
-      option.innerText = duration.toLocaleString('en-US');
+      option.innerText = 'Within ' + duration.toLocaleString('en-US');
       option.selected = Temporal.Duration.compare(duration, timeScale.value) === 0;
       input.appendChild(option);
     }
