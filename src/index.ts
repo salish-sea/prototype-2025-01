@@ -54,6 +54,7 @@ link.update('p', timeScale.value.toString());
 
 const view = new View({
   center: location,
+  projection: 'EPSG:3857',
   zoom: 9,
 });
 
