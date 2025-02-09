@@ -25,16 +25,31 @@ export default class ObservationsControl extends Control {
   }
 
   showObservations(observations: FeatureLike[]) {
-    this.element.innerHTML = '<div>' +
-      observations.map(obs => {
-        let {body, count, kind, observedAt} = obs.getProperties() as ObservationProperties;
-        const time = observedAt ? `<a href='focusTime'><time datetime="${observedAt.toString()}">${observedAt.toLocaleString('en-US', {timeZone: 'PST8PDT'})}</time></a>`
-          : 'undated';
-        body = body?.trim() || '';
-        body = body.replace(new RegExp('^(\s*<br>)*'), '');
-        const bodyHTML = body ? `<dd>${body}</dd>` : '';
-        return `<dt>${time}: ${kind} (${count})</dt>${bodyHTML}`;
-      }).join('\r<br>\r') +
-      '</div>';
+    const container = document.createElement('div');
+    for (const obs of observations) {
+      let {body, count, kind, lifeforms, observedAt} = obs.getProperties() as ObservationProperties;
+      const time = observedAt ? `<a href='focusTime'><time datetime="${observedAt.toString()}">${observedAt.toLocaleString('en-US', {timeZone: 'PST8PDT'})}</time></a>`
+        : 'undated';
+      const term = document.createElement('dt');
+      term.innerHTML = `${time}: ${kind} (${count})`;
+      container.appendChild(term);
+
+      if (lifeforms && lifeforms.length > 0) {
+        const def = document.createElement('dd');
+        def.innerText = 'Tags: ' + lifeforms.join(', ');
+        container.appendChild(def);
+      }
+
+      body = body || '';
+      body = body.replace(/^(\s*<br>)*/, '');
+      body = body.replace(/<br>\s*<br>\s/, '<br>');
+      body = body.trim();
+      if (body) {
+        const def = document.createElement('dd');
+        def.innerHTML = body;
+        container.appendChild(def);
+      }
+    }
+    this.element.innerHTML = container.outerHTML;
   }
 }

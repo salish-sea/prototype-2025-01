@@ -3,7 +3,7 @@ import { Taxon, taxonByName } from "./Taxon";
 
 export class Query extends Observable {
   taxon: Taxon;
-  value: string;
+  value: Readonly<string>;
 
   constructor(query: string) {
     super();

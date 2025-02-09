@@ -12,6 +12,7 @@ import { observationId } from '../observation';
 import { Query } from '../Query';
 import { taxonAndDescendants } from '../Taxon';
 import { TimeScale } from '../TimeScale';
+import { assertIndividualOrca, type IndividualOrca, type Lifeform, type Pod } from '../lifeform';
 
 type Source = 'CINMS' | 'ocean_alert' | 'rwsas' | 'FARPB' | 'whale_alert';
 
@@ -47,6 +48,7 @@ export type MaplifyProperties = {
   body: string;
   count: number;
   kind: string;
+  lifeforms: Lifeform[];
   observedAt: Temporal.Instant;
   source: Source;
   url: string | null;
@@ -66,10 +68,13 @@ class MaplifyFormat extends JSONFeature {
       body: object.comments,
       count: object.number_sighted,
       kind: object.name,
+      lifeforms: detectOrcas(object.comments),
       observedAt: Temporal.PlainDateTime.from(object.created).toZonedDateTime('GMT').toInstant(),
       source: object.source,
       url: null,
     };
+    console.log(object.comments);
+    console.log('Orcas detected: ' + detectOrcas(object.comments).join(', '));
     feature.setProperties(properties);
     feature.setGeometry(new Point([object.longitude, object.latitude]));
     feature.setId(observationId(object.source, object.id));
@@ -78,7 +83,6 @@ class MaplifyFormat extends JSONFeature {
 
   protected readFeaturesFromObject(object: APIResponse, options?: import("ol/format/Feature").ReadOptions): Feature<Geometry>[] {
     const targetTaxa = new Set(taxonAndDescendants(this.query.taxon).map(taxon => taxon.name));
-    console.log(object.results[0]);
     return object.results.
       filter(result => targetTaxa.has(result.scientific_name)).
       map(result => this.readFeatureFromObject(result, options)).
@@ -130,4 +134,36 @@ export class MaplifySource extends VectorSource {
     query.on('change', () => this.refresh());
     timeScale.on('change', () => this.refresh());
   }
+}
+
+const ecotypeRE = /\b(srkw|southern resident|transient|biggs)\b/gi;
+const podCleanerRE = /\s*(\+|,|&|and|-)\\s*/gi;
+const podRE = /\b([jkl])pod\b/gi;
+const individualRE = /\b([tjklt])-?([0-9]{1,3})(s?)\b/gi;
+
+// return an array of identifiers like 'Biggs', 'Transient', 'J', 'K37', etc.
+const detectOrcas = (text: Readonly<string>) => {
+  const matches = new Set<Lifeform>();
+  for (const [, ecotype] of text.matchAll(ecotypeRE)) {
+    switch (ecotype.toLowerCase()) {
+      case 'biggs': matches.add('Biggs'); break;
+      case 'southern resident': matches.add('SRKW'); break;
+      case 'srkw': matches.add('SRKW'); break;
+      case 'transient': matches.add('Biggs'); break;
+    }
+  }
+  for (const [, pod] of text.replaceAll(podCleanerRE, '').matchAll(podRE)) {
+    matches.add(pod.toUpperCase() as Pod);
+  }
+  for (const [, pod, individual, matriline] of text.matchAll(individualRE)) {
+    const id = `${pod.toUpperCase()}${individual}`;
+    assertIndividualOrca(id);
+    if (matriline) {
+      matches.add(`${id}s`);
+    } else {
+      matches.add(pod.toUpperCase() as Pod);
+      matches.add(id);
+    }
+  }
+  return [...matches].sort();
 }

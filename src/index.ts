@@ -31,6 +31,7 @@ import DragBox from 'ol/interaction/DragBox.js';
 import {transformExtent} from 'ol/proj';
 import 'ol/ol.css';
 import './index.css';
+import { ObservationProperties } from './observation';
 
 useGeographic();
 
@@ -114,12 +115,19 @@ const dragBox = new DragBox({
 const observationsControl = new ObservationsControl({pit});
 const selection = select.getFeatures();
 const showObservations = () => {
-  const features = selection.getArray();
-  if (features.length > 0) {
-    observationsControl.showObservations(features);
-  } else {
-    observationsControl.showObservations([inaturalistSource, sightingSource].flatMap(source => source.getFeatures()));
-  }
+  let features = selection.getArray();
+  if (features.length === 0)
+    features = [inaturalistSource, sightingSource].flatMap(source => source.getFeatures());
+  features.sort((a, b) => {
+    const {observedAt: aObservedAt} = a.getProperties() as ObservationProperties;
+    const {observedAt: bObservedAt} = b.getProperties() as ObservationProperties;
+    if (!aObservedAt)
+      return -1;
+    if (!bObservedAt)
+      return 1;
+    return Temporal.Instant.compare(aObservedAt, bObservedAt);
+  });
+  observationsControl.showObservations(features);
 };
 selection.on(['add', 'remove'], showObservations);
 sightingSource.on('featuresloadend', showObservations);

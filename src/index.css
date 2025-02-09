@@ -1,0 +1,43 @@
+body {
+  margin: 0;
+  padding: 0;
+}
+main {
+  background-color: white;
+  height: 100vh;
+  width: 100vw;
+}
+#map {
+  width: 100%;
+  height: 100%;
+}
+.time-control {
+  top: 0.5em;
+  right: 0.5em;
+  padding: 0.5ex;
+}
+.time-control input {
+  background-color: var(--ol-background-color);
+}
+.observations-control {
+  bottom: 0.5em;
+  right: 0.5em;
+  padding: 0.5ex;
+}
+.observations-control > div {
+  background-color: var(--ol-background-color);
+  padding: 0.5ex;
+  overflow-y: scroll;
+  max-width: 440px;
+  max-height: 40vh;
+}
+.taxon-control {
+  top: 5em;
+  right: 0.5em;
+  padding: 0.5ex;
+}
+.time-scale-control {
+  top: 2.5em;
+  right: 0.5em;
+  padding: 0.5em;
+}
