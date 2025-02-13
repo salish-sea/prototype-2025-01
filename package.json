@@ -6,6 +6,7 @@
     "build": "webpack --config webpack.prod.js",
     "serve": "webpack serve --open --config webpack.dev.js",
     "test": "echo \"Error: no test specified\" && exit 1",
+    "upload": "rsync -acvruz dist/ maderas:/var/www/salishsea.io/htdocs/",
     "watch": "webpack --config webpack.dev.js --watch"
   },
   "keywords": [],

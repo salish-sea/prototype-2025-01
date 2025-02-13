@@ -2,7 +2,7 @@ import Map from 'ol/Map';
 import TileLayer from 'ol/layer/Tile';
 import View from 'ol/View';
 import { useGeographic } from 'ol/proj';
-import {Circle, Fill, Stroke, Style} from 'ol/style.js';
+import {Circle, Fill, Icon, Stroke, Style} from 'ol/style.js';
 import VectorLayer from 'ol/layer/Vector';
 import { XYZ } from 'ol/source';
 import {defaults as defaultControls} from 'ol/control.js';
@@ -33,6 +33,7 @@ import 'ol/ol.css';
 import './index.css';
 import { ObservationProperties } from './observation';
 import { Travel } from './source/travel';
+import { Geometry, LineString, Point } from 'ol/geom';
 
 useGeographic();
 
@@ -102,6 +103,36 @@ const sightingLayer = new VectorLayer({
 const travelSource = new Travel({sources: [inaturalistSource, sightingSource]});
 const travelLayer = new VectorLayer({
   source: travelSource,
+  style: (feature: FeatureLike) => {
+    const geometry = feature.getGeometry() as LineString;
+    const styles = [
+      // linestring
+      new Style({
+        stroke: new Stroke({
+          color: '#ffcc33',
+          width: 2,
+        }),
+      }),
+    ];
+    geometry.forEachSegment(function (start, end) {
+      const dx = end[0] - start[0];
+      const dy = end[1] - start[1];
+      const rotation = Math.atan2(dy, dx);
+      // arrows
+      styles.push(
+        new Style({
+          geometry: new Point([(end[0] + start[0]) / 2, (end[1] + start[1]) / 2]),
+          image: new Icon({
+            src: 'arrow.png',
+            anchor: [0.75, 0.5],
+            rotateWithView: true,
+            rotation: -rotation,
+          }),
+        }),
+      );
+    });
+    return styles;
+  },
 });
 
 const setTime = pit.set.bind(pit);
