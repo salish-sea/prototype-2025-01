@@ -2,8 +2,7 @@ import { Control } from "ol/control";
 import { FeatureLike } from "ol/Feature";
 import { ObservationProperties } from "../observation";
 import { PointInTime } from "../PointInTime";
-import VectorSource from "ol/source/Vector";
-import type Select from "ol/interaction/Select";
+import { taxonByName } from "../Taxon";
 
 export default class ObservationsControl extends Control {
   constructor({pit}: {pit: PointInTime}) {
@@ -27,16 +26,20 @@ export default class ObservationsControl extends Control {
   showObservations(observations: FeatureLike[]) {
     const container = document.createElement('div');
     for (const obs of observations) {
-      let {body, count, kind, lifeforms, observedAt} = obs.getProperties() as ObservationProperties;
+      let {body, count, taxon, heading, individuals, observedAt, source, url} = obs.getProperties() as ObservationProperties;
+      const commonName = taxonByName[taxon.toLowerCase()]?.preferred_common_name || taxon;
       const time = observedAt ? `<a href='focusTime'><time datetime="${observedAt.toString()}">${observedAt.toLocaleString('en-US', {timeZone: 'PST8PDT'})}</time></a>`
         : 'undated';
       const term = document.createElement('dt');
-      term.innerHTML = `${time}: ${kind} (${count})`;
+      term.innerHTML = `${time}:` + (count ? ` ${count}x` : '') + ` <b>${commonName}</b>` + (url ? ` via <a href="${url}">${source}</a>` : ` via ${source}`);
       container.appendChild(term);
 
-      if (lifeforms && lifeforms.length > 0) {
+      let tags: string[] = [...individuals];
+      if (heading)
+        tags.push(heading);
+      if (tags.length > 0) {
         const def = document.createElement('dd');
-        def.innerText = 'Tags: ' + lifeforms.join(', ');
+        def.innerText = 'Tags: ' + tags.join(', ');
         container.appendChild(def);
       }
 

@@ -16,7 +16,7 @@ export class Query extends Observable {
       return;
 
     this.value = query;
-    this.taxon = taxonByName[query];
+    this.taxon = taxonByName[query.toLowerCase()];
     this.changed();
   }
 }

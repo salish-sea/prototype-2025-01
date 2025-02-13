@@ -10,6 +10,7 @@ import type { PointInTime } from '../PointInTime';
 import { Query } from '../Query';
 import { TimeScale } from '../TimeScale';
 import { LoaderOptions } from 'ol/source/DataTile';
+import { detectHeading, ObservationProperties } from '../observation';
 
 type ResultPage<T> = {
   total_results: number;
@@ -26,16 +27,12 @@ type Observation = {
   public_positional_accuracy: number;
   taxon: {name: string; preferred_common_name: string | null};
   taxon_geoprivacy: string | null;
-  time_observed_at: string | null;
+  time_observed_at: string; // provided one is guaranteed by the query
   uri: string;
 }
 
-export type INaturalistProperties = {
-  body: string | null;
-  count: number;
-  kind: string;
+type INaturalistProperties = ObservationProperties & {
   obscured: boolean;
-  observedAt: Temporal.Instant | null;
   source: 'inaturalist';
   url: string;
 }
@@ -43,18 +40,14 @@ export type INaturalistProperties = {
 class ObservationPage extends GeoJSON {
   protected readFeaturesFromObject(page: ResultPage<Observation>, options?: ReadOptions): Feature<Geometry>[] {
     const features = page.results.map(obs => {
-      let observedAt = null;
-      if (obs.time_observed_at) {
-        try {
-          observedAt = Temporal.Instant.from(obs.time_observed_at);
-        } catch (error) {
-          console.error(`Failed to decode time_observed_at for iNaturalist observation ${obs.id}: ${error}`);
-        }
-      }
+      const observedAt = Temporal.Instant.from(obs.time_observed_at);
       const properties: INaturalistProperties = {
         body: obs.description,
-        count: 1,
-        kind: obs.taxon.preferred_common_name || obs.taxon.name,
+        coordinates: obs.geojson.coordinates,
+        count: null,
+        heading: detectHeading(obs.description || ''),
+        individuals: [],
+        taxon: obs.taxon.name,
         obscured: obs.geoprivacy === 'obscured' || obs.taxon_geoprivacy === 'obscured',
         observedAt,
         source: 'inaturalist',

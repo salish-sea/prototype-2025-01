@@ -1,20 +1,32 @@
 import { Temporal } from "temporal-polyfill";
-import { INaturalistProperties } from "./source/inaturalist";
-import { MaplifyProperties } from "./source/maplify";
-import { VesselLocationProperties } from "./source/wsf";
 import { Lifeform } from "./lifeform";
 
-type DatasourceProperties = INaturalistProperties | MaplifyProperties | VesselLocationProperties;
-type RequiredProperties = {
-  body: string;
-  count: number;
-  kind: string;
-  lifeforms: Lifeform[];
-  observedAt: Temporal.Instant | null;
+export type ObservationProperties = {
+  body: string | null;
+  coordinates: [number, number];
+  count: number | null;
+  heading: Heading | null;
+  taxon: string;
+  individuals: Lifeform[];
+  observedAt: Temporal.Instant;
   source: string;
+  url: string | null;
 };
-export type ObservationProperties = DatasourceProperties & RequiredProperties;
 
 export function observationId(source: string, id: string | number) {
   return `${source}:${id}`;
 }
+
+export type Heading = 'north' | 'northwest' | 'west' | 'southwest' | 'south' | 'southeast' | 'east' | 'northeast';
+const headingRE = /\b(north|northwest|west|southwest|south|southeast|east|northeast)(bound)?\b/g;
+export const detectHeading: (text: string) => Heading | null = (text: string) => {
+  text = text.toLowerCase();
+  for (const [, heading] of text.matchAll(headingRE)) {
+    return heading as Heading;
+  }
+  return null;
+}
+declare global {
+  var detectHeading: any
+}
+window.detectHeading = detectHeading;

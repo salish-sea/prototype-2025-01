@@ -32,6 +32,7 @@ import {transformExtent} from 'ol/proj';
 import 'ol/ol.css';
 import './index.css';
 import { ObservationProperties } from './observation';
+import { Travel } from './source/travel';
 
 useGeographic();
 
@@ -88,14 +89,19 @@ const herringLayer = new VectorLayer({
 const inaturalistSource = new INaturalistFeatures({query, pit, timeScale});
 const inaturalistLayer = new VectorLayer({
   source: inaturalistSource,
-  style: observationStyle,
+  // style: observationStyle,
 });
 
 const sightingSource = new MaplifySource({query, pit, timeScale});
 
 const sightingLayer = new VectorLayer({
   source: sightingSource,
-  style: observationStyle,
+  // style: observationStyle,
+});
+
+const travelSource = new Travel({sources: [inaturalistSource, sightingSource]});
+const travelLayer = new VectorLayer({
+  source: travelSource,
 });
 
 const setTime = pit.set.bind(pit);
@@ -107,7 +113,7 @@ pit.on('change', () => {
 if (!pit.value)
   pit.set(Temporal.Now.instant());
 
-const select = new Select();
+const select = new Select({layers: [sightingLayer, inaturalistLayer]});
 const dragBox = new DragBox({
   condition: platformModifierKeyOnly,
 });
@@ -175,6 +181,7 @@ const map = new Map({
     herringLayer,
     inaturalistLayer,
     sightingLayer,
+    travelLayer,
     ferryLayer,
   ],
   view,

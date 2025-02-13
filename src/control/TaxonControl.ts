@@ -11,7 +11,7 @@ const options = [
   'Megaptera novaeangliae',
   'Orcinus orca',
   'SRKW'
-].map(name => [name, taxonByName[name].preferred_common_name]);
+].map(name => [name, taxonByName[name.toLowerCase()].preferred_common_name]);
 
 export default class TaxonControl extends Control {
   constructor({query}: {query: Query}) {
