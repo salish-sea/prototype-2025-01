@@ -7,10 +7,9 @@ import { taxonByName } from "../Taxon";
 export default class ObservationsControl extends Control {
   constructor({pit}: {pit: PointInTime}) {
     const container = document.createElement('div');
-    container.className = 'observations-control ol-unselectable ol-control';
+    container.className = 'observations-control ol-selectable ol-control';
 
     const inner = document.createElement('div');
-    inner.innerText = "Observations!";
     container.appendChild(inner);
 
     super({element: container});
@@ -26,12 +25,15 @@ export default class ObservationsControl extends Control {
   showObservations(observations: FeatureLike[]) {
     const container = document.createElement('div');
     for (const obs of observations) {
-      let {body, count, taxon, heading, individuals, observedAt, source, url} = obs.getProperties() as ObservationProperties;
+      let {body, count, taxon, heading, individuals, observedAt, photos, source, url} = obs.getProperties() as ObservationProperties;
       const commonName = taxonByName[taxon.toLowerCase()]?.preferred_common_name || taxon;
       const time = observedAt ? `<a href='focusTime'><time datetime="${observedAt.toString()}">${observedAt.toLocaleString('en-US', {timeZone: 'PST8PDT'})}</time></a>`
         : 'undated';
       const term = document.createElement('dt');
       term.innerHTML = `${time}:` + (count ? ` ${count}x` : '') + ` <b>${commonName}</b>` + (url ? ` via <a href="${url}">${source}</a>` : ` via ${source}`);
+      for (const url of photos) {
+        term.innerHTML += ` <a href="${url}" target="_new">📷</a>`;
+      }
       container.appendChild(term);
 
       let tags: string[] = [...individuals];

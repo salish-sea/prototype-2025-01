@@ -23,8 +23,7 @@ type Observation = {
   id: number;
   description: string | null;
   geojson: {coordinates: [number, number], type: 'Point'};
-  geoprivacy: string | null;
-  public_positional_accuracy: number;
+  photos: [{url: string}],
   taxon: {name: string; preferred_common_name: string | null};
   taxon_geoprivacy: string | null;
   time_observed_at: string; // provided one is guaranteed by the query
@@ -32,7 +31,6 @@ type Observation = {
 }
 
 type INaturalistProperties = ObservationProperties & {
-  obscured: boolean;
   source: 'inaturalist';
   url: string;
 }
@@ -46,11 +44,11 @@ class ObservationPage extends GeoJSON {
         coordinates: obs.geojson.coordinates,
         count: null,
         heading: detectHeading(obs.description || ''),
+        photos: obs.photos.map(photo => photo.url.replace('square', 'original')),
         individuals: [],
-        taxon: obs.taxon.name,
-        obscured: obs.geoprivacy === 'obscured' || obs.taxon_geoprivacy === 'obscured',
         observedAt,
         source: 'inaturalist',
+        taxon: obs.taxon.name,
         url: obs.uri,
       };
       return {
@@ -66,7 +64,7 @@ class ObservationPage extends GeoJSON {
 
 export class Features extends VectorSource {
   baseURL = 'https://api.inaturalist.org/v2/observations';
-  fieldspec = "(geojson:!t,geoprivacy:!t,public_positional_accuracy:!t,taxon:(name:!t,preferred_common_name:!t),taxon_geoprivacy:!t,time_observed_at:!t,uri:!t)";
+  fieldspec = "(geojson:!t,photos:(url:!t),taxon:(name:!t,preferred_common_name:!t),taxon_geoprivacy:!t,time_observed_at:!t,uri:!t)";
 
   constructor({query, pit, timeScale}: {query: Query; pit: PointInTime, timeScale: TimeScale}) {
     const url = ([minx, miny, maxx, maxy]: Extent) => {

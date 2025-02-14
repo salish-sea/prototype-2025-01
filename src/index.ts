@@ -2,11 +2,12 @@ import Map from 'ol/Map';
 import TileLayer from 'ol/layer/Tile';
 import View from 'ol/View';
 import { useGeographic } from 'ol/proj';
-import {Circle, Fill, Icon, Stroke, Style} from 'ol/style.js';
+import {Circle, Fill, Icon, Stroke, Style} from 'ol/style';
 import VectorLayer from 'ol/layer/Vector';
-import { XYZ } from 'ol/source';
-import {defaults as defaultControls} from 'ol/control.js';
-import Link from 'ol/interaction/Link.js';
+import { Vector, XYZ } from 'ol/source';
+import {defaults as defaultControls} from 'ol/control';
+import Link from 'ol/interaction/Link';
+import Draw from 'ol/interaction/Draw';
 import {defaults as defaultInteractions} from 'ol/interaction/defaults';
 import { Temporal } from 'temporal-polyfill';
 import { Features as INaturalistFeatures, Tiles as INaturalistTiles, fetchSpeciesPresent } from './source/inaturalist';
@@ -25,15 +26,15 @@ import GeoJSON from 'ol/format/GeoJSON';
 import { all } from 'ol/loadingstrategy';
 import { Ferries } from './source/wsf';
 import TextStyle from 'ol/style/Text';
-import {platformModifierKeyOnly} from 'ol/events/condition.js';
-import Select from 'ol/interaction/Select.js';
-import DragBox from 'ol/interaction/DragBox.js';
+import {platformModifierKeyOnly} from 'ol/events/condition';
+import Select from 'ol/interaction/Select';
+import DragBox from 'ol/interaction/DragBox';
 import {transformExtent} from 'ol/proj';
 import 'ol/ol.css';
 import './index.css';
 import { ObservationProperties } from './observation';
 import { Travel } from './source/travel';
-import { Geometry, LineString, Point } from 'ol/geom';
+import { LineString, Point } from 'ol/geom';
 
 useGeographic();
 
@@ -149,6 +150,13 @@ const dragBox = new DragBox({
   condition: platformModifierKeyOnly,
 });
 
+const newPoints = new Vector({});
+const newPointLayer = new VectorLayer({source: newPoints});
+const draw = new Draw({
+  type: 'Point',
+  source: newPoints,
+});
+
 const observationsControl = new ObservationsControl({pit});
 const selection = select.getFeatures();
 const showObservations = () => {
@@ -212,6 +220,7 @@ const map = new Map({
     herringLayer,
     inaturalistLayer,
     sightingLayer,
+    newPointLayer,
     travelLayer,
     ferryLayer,
   ],

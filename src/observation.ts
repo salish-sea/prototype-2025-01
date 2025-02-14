@@ -6,10 +6,11 @@ export type ObservationProperties = {
   coordinates: [number, number];
   count: number | null;
   heading: Heading | null;
-  taxon: string;
+  photos: string[];
   individuals: Lifeform[];
   observedAt: Temporal.Instant;
   source: string;
+  taxon: string;
   url: string | null;
 };
 
@@ -18,9 +19,8 @@ export function observationId(source: string, id: string | number) {
 }
 
 export type Heading = 'north' | 'northwest' | 'west' | 'southwest' | 'south' | 'southeast' | 'east' | 'northeast';
-const headingRE = /\b(north|northwest|west|southwest|south|southeast|east|northeast)(bound)?\b/g;
+const headingRE = /\b(north|northwest|west|southwest|south|southeast|east|northeast)(bound)?\b/gi;
 export const detectHeading: (text: string) => Heading | null = (text: string) => {
-  text = text.toLowerCase();
   for (const [, heading] of text.matchAll(headingRE)) {
     return heading as Heading;
   }

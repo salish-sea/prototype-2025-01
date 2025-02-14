@@ -63,10 +63,11 @@ class MaplifyFormat extends JSONFeature {
       coordinates: [object.longitude, object.latitude],
       count: object.number_sighted,
       heading: detectHeading(object.comments),
-      taxon: normalizeTaxon(object.name),
+      photos: object.photo_url ? [object.photo_url] : [],
       individuals: detectIndividuals(object.comments),
       observedAt: Temporal.PlainDateTime.from(object.created).toZonedDateTime('GMT').toInstant(),
       source: object.source,
+      taxon: normalizeTaxon(object.name),
       url: null,
     };
     feature.setProperties(properties);
