@@ -26,6 +26,9 @@ export class Travel extends Vector {
           if (timeDelta.sign <= 0)
             continue;
 
+          if(timeDelta.total('hours') > 12)
+            continue;
+
           const displacementMeters = getDistance(obsCoordinates, candidateCoordinates);
           if (displacementMeters > 10000)
             continue;
