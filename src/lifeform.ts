@@ -64,8 +64,7 @@ export const detectIndividuals = (text: Readonly<string>) => {
     pod = pod.toUpperCase();
     assertPod(pod);
     matches.add(pod);
-    individual = normalizeIndividual(individual);
-    const id = `${pod}${individual.toUpperCase()}`;
+    const id = normalizeIndividual(`${pod}${individual.toUpperCase()}`);
     if (matriline) {
       matches.add(`${id}s` as Matriline);
     } else if (isIndividualOrca(id)) {

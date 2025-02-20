@@ -17,7 +17,7 @@ import TimeControl from './control/TimeControl';
 import ObservationsControl from './control/ObservationsControl';
 import { Query } from './Query';
 import TaxonControl from './control/TaxonControl';
-import { FeatureLike } from 'ol/Feature';
+import Feature, { FeatureLike } from 'ol/Feature';
 import { TimeScale } from './TimeScale';
 import { TimeScaleControl } from './control/TimeScaleControl';
 import '@formatjs/intl-durationformat/polyfill'
@@ -34,7 +34,9 @@ import 'ol/ol.css';
 import './index.css';
 import { ObservationProperties } from './observation';
 import { Travel } from './source/travel';
-import { LineString, Point } from 'ol/geom';
+import { Geometry, LineString, Point } from 'ol/geom';
+import { TaxonView } from './control/TaxonView';
+import { Collection } from 'ol';
 
 useGeographic();
 
@@ -157,7 +159,9 @@ const draw = new Draw({
   source: newPoints,
 });
 
-const observationsControl = new ObservationsControl({pit});
+const observations = new Collection<Feature<Geometry>>();
+
+// const observationsControl = new ObservationsControl({pit});
 const selection = select.getFeatures();
 const showObservations = () => {
   let features = selection.getArray();
@@ -172,13 +176,18 @@ const showObservations = () => {
       return 1;
     return Temporal.Instant.compare(aObservedAt, bObservedAt);
   });
-  observationsControl.showObservations(features);
+  observations.clear();
+  observations.extend(features);
+  observations.changed();
 };
 selection.on(['add', 'remove'], showObservations);
 sightingSource.on('featuresloadend', showObservations);
 inaturalistSource.on('featuresloadend', showObservations);
+showObservations();
 const taxonControl = new TaxonControl({query});
 const timeScaleControl = new TimeScaleControl({timeScale});
+
+const taxonView = new TaxonView({observations, query});
 
 const iNaturalistTiles = new INaturalistTiles({query});
 const iNaturalistTileLayer = new TileLayer({
@@ -200,7 +209,7 @@ document.body.appendChild(mainElement);
 
 const map = new Map({
   target: mapElement,
-  controls: defaultControls().extend([new TimeControl({pit}), observationsControl, taxonControl, timeScaleControl]),
+  controls: defaultControls().extend([new TimeControl({pit}), timeScaleControl, taxonView]),
   interactions: defaultInteractions().extend([link, select, dragBox]),
   layers: [
     new TileLayer({
