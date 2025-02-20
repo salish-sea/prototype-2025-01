@@ -33,7 +33,7 @@ function isIndividualOrca(name: string): name is IndividualOrca {
     return true;
   if (name.startsWith('CRC'))
     return true;
-  console.error(`${name} is not an individual Orca`);
+  console.warn(`${name} is not an individual Orca`);
   return false;
 }
 

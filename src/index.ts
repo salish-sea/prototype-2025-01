@@ -10,13 +10,11 @@ import Link from 'ol/interaction/Link';
 import Draw from 'ol/interaction/Draw';
 import {defaults as defaultInteractions} from 'ol/interaction/defaults';
 import { Temporal } from 'temporal-polyfill';
-import { Features as INaturalistFeatures, Tiles as INaturalistTiles, fetchSpeciesPresent } from './source/inaturalist';
+import { Features as INaturalistFeatures, Tiles as INaturalistTiles } from './source/inaturalist';
 import { MaplifySource } from './source/maplify';
 import { PointInTime } from './PointInTime';
 import TimeControl from './control/TimeControl';
-import ObservationsControl from './control/ObservationsControl';
 import { Query } from './Query';
-import TaxonControl from './control/TaxonControl';
 import Feature, { FeatureLike } from 'ol/Feature';
 import { TimeScale } from './TimeScale';
 import { TimeScaleControl } from './control/TimeScaleControl';
@@ -105,6 +103,7 @@ const sightingLayer = new VectorLayer({
 
 const travelSource = new Travel({sources: [inaturalistSource, sightingSource]});
 const travelLayer = new VectorLayer({
+  maxResolution: 80,
   source: travelSource,
   style: (feature: FeatureLike) => {
     const geometry = feature.getGeometry() as LineString;
@@ -164,30 +163,17 @@ const observations = new Collection<Feature<Geometry>>();
 // const observationsControl = new ObservationsControl({pit});
 const selection = select.getFeatures();
 const showObservations = () => {
-  let features = selection.getArray();
-  if (features.length === 0)
-    features = [inaturalistSource, sightingSource].flatMap(source => source.getFeatures());
-  features.sort((a, b) => {
-    const {observedAt: aObservedAt} = a.getProperties() as ObservationProperties;
-    const {observedAt: bObservedAt} = b.getProperties() as ObservationProperties;
-    if (!aObservedAt)
-      return -1;
-    if (!bObservedAt)
-      return 1;
-    return Temporal.Instant.compare(aObservedAt, bObservedAt);
-  });
+  const features = [inaturalistSource, sightingSource].flatMap(source => source.getFeatures());
   observations.clear();
   observations.extend(features);
   observations.changed();
 };
-selection.on(['add', 'remove'], showObservations);
 sightingSource.on('featuresloadend', showObservations);
 inaturalistSource.on('featuresloadend', showObservations);
 showObservations();
-const taxonControl = new TaxonControl({query});
 const timeScaleControl = new TimeScaleControl({timeScale});
 
-const taxonView = new TaxonView({observations, query});
+const taxonView = new TaxonView({observations, query, selection});
 
 const iNaturalistTiles = new INaturalistTiles({query});
 const iNaturalistTileLayer = new TileLayer({
@@ -219,14 +205,9 @@ const map = new Map({
           'https://server.arcgisonline.com/arcgis/rest/services/Ocean/World_Ocean_Base/MapServer/tile/{z}/{y}/{x}',
         ],
       })
-      // source: new Google({
-      //   key: "AIzaSyBKcLuHvJYN7Q3uwKBHWx1h3R6YVfNW_FM",
-      //   layerTypes: ['layerRoadmap'],
-      //   mapType: 'terrain',
-      // }),
     }),
     iNaturalistTileLayer,
-    herringLayer,
+    // herringLayer,
     inaturalistLayer,
     sightingLayer,
     newPointLayer,
@@ -253,6 +234,6 @@ dragBox.on('boxend', () => {
 // });
 
 declare global {
-  var fetchSpeciesPresent: any;
+  var view: any;
 }
-window.fetchSpeciesPresent = fetchSpeciesPresent;
+window.view = view;

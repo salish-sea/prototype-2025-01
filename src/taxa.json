@@ -399,10 +399,16 @@
     "parent_id": 41547,
     "preferred_common_name": "Bryde's Whale"
   },
-  "SRKW": {
-    "id": 99941521,
-    "name": "SRKW",
-    "preferred_common_name": "Southern Resident Killer Whale",
+  "1602531": {
+    "id": 1602531,
+    "name": "Orcinus orca ater",
+    "preferred_common_name": "Resident Killer Whale",
+    "parent_id": 41521
+  },
+  "1602533": {
+    "id": 1602533,
+    "name": "Orcinus orca rectipinnus",
+    "preferred_common_name": "Bigg's Killer Whale",
     "parent_id": 41521
   }
 }

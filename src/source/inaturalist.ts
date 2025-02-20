@@ -11,6 +11,7 @@ import { Query } from '../Query';
 import { TimeScale } from '../TimeScale';
 import { LoaderOptions } from 'ol/source/DataTile';
 import { detectHeading, ObservationProperties } from '../observation';
+import { queryStringAppend } from './util';
 
 type ResultPage<T> = {
   total_results: number;
@@ -105,54 +106,3 @@ export class Tiles extends ImageTile {
     query.on('change', () => this.changed());
   }
 }
-
-
-const speciesCountsEndpoint = 'https://api.inaturalist.org/v2/observations/species_counts';
-const speciesCountsFieldspec = '(taxon:(id:!t,name:!t,parent_id:!t,preferred_common_name:!t,ancestors:(id:!t,name:!t,parent_id:!t,preferred_common_name:!t)))';
-
-const queryStringAppend = (base: string, attrs: {[k: string]: string | string[] | number | number[]}) => {
-  let queryString = Object.entries(attrs).map(([key, value]) => {
-    value = Array.isArray(value) ? value.join(',') : value.toString();
-    return `${key}=${value}`;
-  }).join('&');
-  return base + (base.indexOf('?') === -1 ? '?' : '&') + queryString;
-}
-
-export async function fetchSpeciesPresent(taxonID: number, placeID: number) {
-  const url = queryStringAppend(speciesCountsEndpoint, {
-    fields: speciesCountsFieldspec,
-    include_ancestors: 'true',
-    locale: 'en-US',
-    place_id: placeID,
-    preferred_place_id: 1,
-    quality_grade: 'research',
-    taxon_id: taxonID,
-  });
-  const resp = await fetch(url);
-  const body: ResultPage<SpeciesCount> = await resp.json();
-  const taxonByID: {[k: number]: Taxon} = {};
-  for (const {taxon: {ancestors, ...taxon}} of body.results) {
-    taxonByID[taxon.id] = taxon;
-    for (const ancestor of ancestors) {
-      taxonByID[ancestor.id] = ancestor;
-    }
-  }
-  return taxonByID;
-}
-
-export type Taxon = {
-  id: number;
-  name: string; // scientific name
-  parent_id: number;
-  preferred_common_name: string; // en-US
-} | {
-  id: 48460;
-  name: 'Life';
-  parent_id: null;
-  preferred_common_name: 'Life';
-};
-
-type SpeciesCount = {
-  count: number;
-  taxon: Taxon & {ancestors: Taxon[]};
-};

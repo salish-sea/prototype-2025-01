@@ -57,6 +57,13 @@ class MaplifyFormat extends JSONFeature {
   }
 
   protected readFeatureFromObject(object: Result, options?: import("ol/format/Feature").ReadOptions): Feature<Geometry> | Feature<Geometry>[] {
+    let taxon = normalizeTaxon(object.name);
+    const individuals = detectIndividuals(object.comments);
+    if (individuals.indexOf('Biggs') !== -1) {
+      taxon = 'Orcinus orca rectipinnus';
+    } else if (individuals.indexOf('SRKW') !== -1) {
+      taxon = 'Orcinus orca ater';
+    }
     const feature = new Feature();
     const properties: MaplifyProperties = {
       body: object.comments,
@@ -64,10 +71,10 @@ class MaplifyFormat extends JSONFeature {
       count: object.number_sighted,
       heading: detectHeading(object.comments),
       photos: object.photo_url ? [object.photo_url] : [],
-      individuals: detectIndividuals(object.comments),
+      individuals,
       observedAt: Temporal.PlainDateTime.from(object.created).toZonedDateTime('GMT').toInstant(),
       source: object.source,
-      taxon: normalizeTaxon(object.name),
+      taxon,
       url: null,
     };
     feature.setProperties(properties);
