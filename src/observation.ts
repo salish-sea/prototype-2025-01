@@ -5,10 +5,12 @@ export type ObservationProperties = {
   body: string | null;
   coordinates: [number, number];
   count: number | null;
+  ecotype: string | null;
   heading: Heading | null;
   photos: string[];
   individuals: Lifeform[];
   observedAt: Temporal.Instant;
+  pod: string | null;
   source: string;
   taxon: string;
   url: string | null;

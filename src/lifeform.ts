@@ -37,33 +37,39 @@ function isIndividualOrca(name: string): name is IndividualOrca {
   return false;
 }
 
-
 const ecotypeRE = /\b(srkw|southern resident|transient|biggs)\b/gi;
-const podCleanerRE = /\s*(\+|,|&|and|-)\\s*/gi;
-const podRE = /\b([jkl]+)\s?pod\b/gi;
-const individualRE = /\b(t|j|k|l|t|crc)-?([0-9][0-9a-f]+)(s?)\b/gi;
-
-// return an array of identifiers like 'Biggs', 'Transient', 'J', 'K37', etc.
-export const detectIndividuals = (text: Readonly<string>) => {
-  const annotatedText = `${text}`;
-  const matches = new Set<Lifeform>();
+export const detectEcotype = (text: Readonly<string>) => {
   for (const [, ecotype] of text.matchAll(ecotypeRE)) {
     switch (ecotype.toLowerCase()) {
-      case 'biggs': matches.add('Biggs'); break;
-      case 'southern resident': matches.add('SRKW'); break;
-      case 'srkw': matches.add('SRKW'); break;
-      case 'transient': matches.add('Biggs'); break;
+      case 'biggs': return 'Biggs';
+      case 'southern resident': return 'SRKW';
+      case 'srkw': return 'SRKW';
+      case 'transient': return 'Biggs';
     }
   }
+  return null;
+}
+
+const podCleanerRE = /\s*(\+|,|&|and|-)\\s*/gi;
+const podRE = /\b([jklt]+)\s?pod\b/gi;
+export const detectPod = (text: Readonly<string>) => {
   for (const [, pods] of text.replaceAll(podCleanerRE, '').matchAll(podRE)) {
     for (const pod of [...pods]) {
-      matches.add(pod.toUpperCase() as Pod);
+      assertPod(pod);
+      return pod.toUpperCase();
     }
   }
+  if (detectEcotype(text) === 'Biggs')
+    return 'T';
+  return null;
+}
+
+// return an array of identifiers like 'Biggs', 'Transient', 'J', 'K37', etc.
+const individualRE = /\b(t|j|k|l|t|crc)-?([0-9][0-9a-f]+)(s?)\b/gi;
+export const detectIndividuals = (text: Readonly<string>) => {
+  const matches = new Set<Lifeform>();
   for (let [, pod, individual, matriline] of text.matchAll(individualRE)) {
     pod = pod.toUpperCase();
-    assertPod(pod);
-    matches.add(pod);
     const id = normalizeIndividual(`${pod}${individual.toUpperCase()}`);
     if (matriline) {
       matches.add(`${id}s` as Matriline);
@@ -73,7 +79,3 @@ export const detectIndividuals = (text: Readonly<string>) => {
   }
   return [...matches].sort();
 }
-declare global {
-  var detectIndividuals: any;
-}
-window.detectIndividuals = detectIndividuals;

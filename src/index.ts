@@ -2,7 +2,7 @@ import Map from 'ol/Map';
 import TileLayer from 'ol/layer/Tile';
 import View from 'ol/View';
 import { useGeographic } from 'ol/proj';
-import {Circle, Fill, Icon, Stroke, Style} from 'ol/style';
+import {Icon, Stroke, Style} from 'ol/style';
 import VectorLayer from 'ol/layer/Vector';
 import { Vector, XYZ } from 'ol/source';
 import {defaults as defaultControls} from 'ol/control';
@@ -19,9 +19,6 @@ import Feature, { FeatureLike } from 'ol/Feature';
 import { TimeScale } from './TimeScale';
 import { TimeScaleControl } from './control/TimeScaleControl';
 import '@formatjs/intl-durationformat/polyfill'
-import VectorSource from 'ol/source/Vector';
-import GeoJSON from 'ol/format/GeoJSON';
-import { all } from 'ol/loadingstrategy';
 import { Ferries } from './source/wsf';
 import TextStyle from 'ol/style/Text';
 import {platformModifierKeyOnly} from 'ol/events/condition';
@@ -30,11 +27,11 @@ import DragBox from 'ol/interaction/DragBox';
 import {transformExtent} from 'ol/proj';
 import 'ol/ol.css';
 import './index.css';
-import { ObservationProperties } from './observation';
 import { Travel } from './source/travel';
 import { Geometry, LineString, Point } from 'ol/geom';
 import { TaxonView } from './control/TaxonView';
 import { Collection } from 'ol';
+import { observationStyle, selectedObservationStyle } from './style';
 
 useGeographic();
 
@@ -64,26 +61,19 @@ const view = new View({
   zoom: 9,
 });
 
-// const herringSource = new VectorSource({
-//   format: new GeoJSON(),
-//   strategy: all,
-//   url: './herring-spawning.geojson',
-// });
-// const herringLayer = new VectorLayer({
-//   source: herringSource,
-// });
-
 const inaturalistSource = new INaturalistFeatures({query, pit, timeScale});
 const inaturalistLayer = new VectorLayer({
+  declutter: true,
   source: inaturalistSource,
-  // style: observationStyle,
+  style: observationStyle,
 });
 
 const sightingSource = new MaplifySource({query, pit, timeScale});
 
 const sightingLayer = new VectorLayer({
+  declutter: true,
   source: sightingSource,
-  // style: observationStyle,
+  style: observationStyle,
 });
 
 const travelSource = new Travel({sources: [inaturalistSource, sightingSource]});
@@ -131,7 +121,10 @@ pit.on('change', () => {
 if (!pit.value)
   pit.set(Temporal.Now.instant());
 
-const select = new Select({layers: [sightingLayer, inaturalistLayer]});
+const select = new Select({
+  layers: [sightingLayer, inaturalistLayer],
+  style: selectedObservationStyle,
+});
 const dragBox = new DragBox({
   condition: platformModifierKeyOnly,
 });
@@ -195,12 +188,11 @@ const map = new Map({
         ],
       })
     }),
+    travelLayer,
     iNaturalistTileLayer,
-    // herringLayer,
     inaturalistLayer,
     sightingLayer,
     newPointLayer,
-    travelLayer,
     ferryLayer,
   ],
   view,
@@ -223,6 +215,8 @@ dragBox.on('boxend', () => {
 // });
 
 declare global {
+  var sightingLayer: any;
   var view: any;
 }
 window.view = view;
+window.sightingLayer = sightingLayer;

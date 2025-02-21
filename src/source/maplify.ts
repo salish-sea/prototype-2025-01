@@ -12,7 +12,7 @@ import { detectHeading, observationId, ObservationProperties } from '../observat
 import { Query } from '../Query';
 import { normalizeTaxon, taxonAndDescendants } from '../Taxon';
 import { TimeScale } from '../TimeScale';
-import { detectIndividuals } from '../lifeform';
+import { detectEcotype, detectIndividuals, detectPod } from '../lifeform';
 
 type Source = 'CINMS' | 'ocean_alert' | 'rwsas' | 'FARPB' | 'whale_alert';
 
@@ -58,10 +58,10 @@ class MaplifyFormat extends JSONFeature {
 
   protected readFeatureFromObject(object: Result, options?: import("ol/format/Feature").ReadOptions): Feature<Geometry> | Feature<Geometry>[] {
     let taxon = normalizeTaxon(object.name);
-    const individuals = detectIndividuals(object.comments);
-    if (individuals.indexOf('Biggs') !== -1) {
+    const ecotype = detectEcotype(object.comments);
+    if (ecotype === 'Biggs') {
       taxon = 'Orcinus orca rectipinnus';
-    } else if (individuals.indexOf('SRKW') !== -1) {
+    } else if (ecotype === 'SRKW') {
       taxon = 'Orcinus orca ater';
     }
     const feature = new Feature();
@@ -69,9 +69,11 @@ class MaplifyFormat extends JSONFeature {
       body: object.comments,
       coordinates: [object.longitude, object.latitude],
       count: object.number_sighted,
+      ecotype,
       heading: detectHeading(object.comments),
+      pod: detectPod(object.comments),
       photos: object.photo_url ? [object.photo_url] : [],
-      individuals,
+      individuals: detectIndividuals(object.comments),
       observedAt: Temporal.PlainDateTime.from(object.created).toZonedDateTime('GMT').toInstant(),
       source: object.source,
       taxon,

@@ -12,6 +12,7 @@ import { TimeScale } from '../TimeScale';
 import { LoaderOptions } from 'ol/source/DataTile';
 import { detectHeading, ObservationProperties } from '../observation';
 import { queryStringAppend } from './util';
+import { detectEcotype, detectIndividuals, detectPod } from '../lifeform';
 
 type ResultPage<T> = {
   total_results: number;
@@ -44,10 +45,12 @@ class ObservationPage extends GeoJSON {
         body: obs.description,
         coordinates: obs.geojson.coordinates,
         count: null,
+        ecotype: detectEcotype(obs.description || ''),
         heading: detectHeading(obs.description || ''),
         photos: obs.photos.map(photo => photo.url.replace('square', 'original')),
-        individuals: [],
+        individuals: detectIndividuals(obs.description || ''),
         observedAt,
+        pod: detectPod(obs.description || ''),
         source: 'inaturalist',
         taxon: obs.taxon.name,
         url: obs.uri,
