@@ -24,10 +24,20 @@ export const normalizeTaxon = (name: string) => {
   if (!taxon)
     taxon = taxonByCommonName[lowerName];
 
+  if (lowerName.indexOf('resident killer') !== -1)
+    taxon = taxonByName['orcinus orca ater'];
+
+  if (lowerName.indexOf('minke') !== -1)
+    taxon = taxonByName['balaenoptera acutorostrata'];
+
   if (!taxon) {
     console.error(`Unknown taxon ${name}.`);
     return name;
   }
 
   return taxon.name;
+}
+
+export const species = (name: string) => {
+  return name.split(' ').slice(0, 2).join(' ');
 }

@@ -1,8 +1,9 @@
-import { Collection, Feature } from "ol";
+import { Feature } from "ol";
 import { Vector } from "ol/source";
 import { ObservationProperties } from "../observation";
 import { LineString } from "ol/geom";
-import { getDistance, getLength } from "ol/sphere";
+import { getDistance } from "ol/sphere";
+import { species } from "../Taxon";
 
 export class Travel extends Vector {
   constructor({sources}: {sources: Vector[]}) {
@@ -18,7 +19,7 @@ export class Travel extends Vector {
 
         for (const candidate of observations) {
           const {coordinates: candidateCoordinates, observedAt: candidateObservedAt, taxon: candidateTaxon} = candidate.getProperties() as ObservationProperties;
-          if (obsTaxon !== candidateTaxon)
+          if (species(obsTaxon) !== species(candidateTaxon))
             continue;
 
           const timeDelta = candidateObservedAt.since(obsObservedAt);

@@ -64,29 +64,14 @@ const view = new View({
   zoom: 9,
 });
 
-const observationStyle = (feature: FeatureLike) => {
-  const observedAt: Temporal.Instant = feature.get('observedAt');
-  const delta = pit.value?.until(observedAt) || new Temporal.Duration();
-  const proportionOfScale = delta.abs().total('seconds') / timeScale.value.total('seconds');
-  const hue = delta.sign < 0 ? 280 : 100;
-  const opacity = Math.min(1, 0.3 * Math.pow(Math.min(1, proportionOfScale), -0.6));
-  return new Style({
-    image: new Circle({
-      fill: new Fill({color: `hsl(${hue} 50% 50% / ${opacity})`}),
-      stroke: delta.sign === 0 ? new Stroke({color: 'yellow', width: 2}) : undefined,
-      radius: 5,
-    })
-  });
-};
-
-const herringSource = new VectorSource({
-  format: new GeoJSON(),
-  strategy: all,
-  url: './herring-spawning.geojson',
-});
-const herringLayer = new VectorLayer({
-  source: herringSource,
-});
+// const herringSource = new VectorSource({
+//   format: new GeoJSON(),
+//   strategy: all,
+//   url: './herring-spawning.geojson',
+// });
+// const herringLayer = new VectorLayer({
+//   source: herringSource,
+// });
 
 const inaturalistSource = new INaturalistFeatures({query, pit, timeScale});
 const inaturalistLayer = new VectorLayer({
@@ -162,6 +147,10 @@ const observations = new Collection<Feature<Geometry>>();
 
 // const observationsControl = new ObservationsControl({pit});
 const selection = select.getFeatures();
+selection.on('add', e => {
+  console.log(e.element.getProperties());
+});
+
 const showObservations = () => {
   const features = [inaturalistSource, sightingSource].flatMap(source => source.getFeatures());
   observations.clear();
