@@ -19,23 +19,6 @@ main {
 .time-control input {
   background-color: var(--ol-background-color);
 }
-.observations-control {
-  bottom: 0.5em;
-  right: 0.5em;
-  padding: 0.5ex;
-}
-.observations-control > div {
-  background-color: var(--ol-background-color);
-  padding: 0.5ex;
-  overflow-y: scroll;
-  max-width: 440px;
-  max-height: 40vh;
-}
-.taxon-control {
-  top: 5em;
-  right: 0.5em;
-  padding: 0.5ex;
-}
 .taxon-view {
   bottom: 0.5em;
   right: 0.5em;
@@ -50,4 +33,27 @@ main {
   top: 2.5em;
   right: 0.5em;
   padding: 0.5em;
+}
+.new-observation-control {
+  top: 5em;
+  right: 0.5em;
+  padding: 0.5ex;
+}
+.new-observation-control button {
+  padding: 0.5ex;
+  width: auto;
+}
+.new-observation-control.inactive form {
+  display: none;
+}
+.new-observation-control label {
+  display: block;
+  font-weight: bold;
+  margin-top: 1em;
+}
+.new-observation-control input {
+  display: block;
+}
+.new-observation-control select {
+  display: block;
 }

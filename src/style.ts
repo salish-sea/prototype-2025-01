@@ -10,7 +10,9 @@ const transparentWhite = 'rgba(255, 255, 255, 0.4)';
 const solidBlue = '#3399CC';
 
 const tag = (observation: Feature<Geometry>) => {
-  const {ecotype, pod, taxon} = observation.getProperties() as ObservationProperties;
+  const {ecotype, pod, taxon} = observation.getProperties() as Partial<ObservationProperties>;
+  if (!taxon)
+    return '?';
   const taxonName = taxonByName[taxon.toLowerCase()].preferred_common_name;
   return pod || ecotype || taxonName[0];
 }
@@ -46,6 +48,10 @@ export const observationStyle = (observation: Feature<Geometry>) => {
   return observationStyle2(observation, false);
 };
 
+export const pliantObservationStyle = (observation: Feature<Geometry>) => {
+  return observationStyle2(observation, true);
+};
+
 export const selectedObservationStyle = (observation: Feature<Geometry>) => {
   const {body, count, individuals, observedAt, taxon} = observation.getProperties() as ObservationProperties;
   let text = observedAt.toLocaleString('en-US', {dateStyle: 'short', timeZone: 'PST8PDT', timeStyle: 'short'});
@@ -68,3 +74,10 @@ export const selectedObservationStyle = (observation: Feature<Geometry>) => {
     })
   ];
 };
+
+export const sighterStyle = new Style({
+  text: new Text({
+    declutterMode: 'none',
+    text: '👁️‍🗨️',
+  }),
+});

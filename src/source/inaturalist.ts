@@ -80,11 +80,19 @@ export class Features extends VectorSource {
       const earliest = targetDate.subtract(timeScale.value);
       const latest = targetDate.add(timeScale.value);
 
-      const url = this.baseURL +
-        `?taxon_id=${taxonId}&d1=${earliest}&d2=${latest}` +
-        `&nelat=${maxy.toFixed(6)}&nelng=${maxx.toFixed(6)}&swlat=${miny.toFixed(6)}&swlng=${minx.toFixed(6)}` +
-        '&geoprivacy=open&taxon_geoprivacy=open' +
-        `&fields=${this.fieldspec}&per_page=200`;
+      const url = queryStringAppend(this.baseURL, {
+        taxon_id: taxonId,
+        d1: earliest.toString(),
+        d2: latest.toString(),
+        nelat: maxy.toFixed(6),
+        nelng: maxx.toFixed(6),
+        swlat: miny.toFixed(6),
+        swlng: minx.toFixed(6),
+        geoprivacy: 'open',
+        taxon_geoprivacy: 'open',
+        fields: this.fieldspec,
+        per_page: 200,
+      });
       return url;
     }
     super({format: new ObservationPage(), strategy: bbox, url});

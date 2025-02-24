@@ -7,7 +7,8 @@ import VectorLayer from 'ol/layer/Vector';
 import { Vector, XYZ } from 'ol/source';
 import {defaults as defaultControls} from 'ol/control';
 import Link from 'ol/interaction/Link';
-import Draw from 'ol/interaction/Draw';
+import Modify from 'ol/interaction/Modify';
+import Snap from 'ol/interaction/Snap';
 import {defaults as defaultInteractions} from 'ol/interaction/defaults';
 import { Temporal } from 'temporal-polyfill';
 import { Features as INaturalistFeatures, Tiles as INaturalistTiles } from './source/inaturalist';
@@ -31,7 +32,8 @@ import { Travel } from './source/travel';
 import { Geometry, LineString, Point } from 'ol/geom';
 import { TaxonView } from './control/TaxonView';
 import { Collection } from 'ol';
-import { observationStyle, selectedObservationStyle } from './style';
+import { observationStyle, pliantObservationStyle, selectedObservationStyle } from './style';
+import NewObservationControl from './control/NewObservationControl';
 
 useGeographic();
 
@@ -129,12 +131,10 @@ const dragBox = new DragBox({
   condition: platformModifierKeyOnly,
 });
 
-const newPoints = new Vector({});
-const newPointLayer = new VectorLayer({source: newPoints});
-const draw = new Draw({
-  type: 'Point',
-  source: newPoints,
-});
+const newObservations = new Vector({});
+const newObservationsLayer = new VectorLayer({source: newObservations});
+const modify = new Modify({source: newObservations, style: pliantObservationStyle});
+const snap = new Snap({source: newObservations});
 
 const observations = new Collection<Feature<Geometry>>();
 
@@ -178,7 +178,7 @@ document.body.appendChild(mainElement);
 const map = new Map({
   target: mapElement,
   controls: defaultControls().extend([new TimeControl({pit}), timeScaleControl, taxonView]),
-  interactions: defaultInteractions().extend([link, select, dragBox]),
+  interactions: defaultInteractions().extend([dragBox, link, modify, select, snap]),
   layers: [
     new TileLayer({
       source: new XYZ({
@@ -192,11 +192,14 @@ const map = new Map({
     iNaturalistTileLayer,
     inaturalistLayer,
     sightingLayer,
-    newPointLayer,
+    newObservationsLayer,
     ferryLayer,
   ],
   view,
 });
+
+const newObservationControl = new NewObservationControl({map, source: newObservations});
+map.addControl(newObservationControl);
 
 dragBox.on('boxend', () => {
   const boxExtent = transformExtent(dragBox.getGeometry().getExtent(), 'EPSG:3857', 'EPSG:4326');
