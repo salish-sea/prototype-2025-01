@@ -5,7 +5,7 @@ import type { Vector } from 'ol/source';
 import { taxonByName } from "../Taxon";
 import { Geometry, LineString, Point } from 'ol/geom';
 import { Feature } from 'ol';
-import { observationStyle, sighterStyle } from "../style";
+import { bearingStyle, observationStyle, sighterStyle } from "../style";
 import { Temporal } from 'temporal-polyfill';
 import { toNaiveISO } from '../PointInTime';
 
@@ -146,6 +146,7 @@ export default class NewObservationControl extends Control {
 
     const bearingLine = source.getFeatureById(bearingFeatureId) as Feature<LineString> | null || new Feature<LineString>();
     bearingLine.setId(bearingFeatureId);
+    bearingLine.setStyle(bearingStyle);
     const recomputeBearing = () => {
       const observerCoordinates = observerFeature.getGeometry()!.getCoordinates();
       const subjectCoordinates = subjectFeature.getGeometry()!.getCoordinates();

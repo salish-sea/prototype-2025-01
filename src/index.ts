@@ -2,9 +2,9 @@ import Map from 'ol/Map';
 import TileLayer from 'ol/layer/Tile';
 import View from 'ol/View';
 import { useGeographic } from 'ol/proj';
-import {Icon, Stroke, Style} from 'ol/style';
+import { Style} from 'ol/style';
 import VectorLayer from 'ol/layer/Vector';
-import { Vector, XYZ } from 'ol/source';
+import { XYZ } from 'ol/source';
 import {defaults as defaultControls} from 'ol/control';
 import Link from 'ol/interaction/Link';
 import Modify from 'ol/interaction/Modify';
@@ -16,7 +16,7 @@ import { MaplifySource } from './source/maplify';
 import { PointInTime } from './PointInTime';
 import TimeControl from './control/TimeControl';
 import { Query } from './Query';
-import Feature, { FeatureLike } from 'ol/Feature';
+import Feature from 'ol/Feature';
 import { TimeScale } from './TimeScale';
 import { TimeScaleControl } from './control/TimeScaleControl';
 import '@formatjs/intl-durationformat/polyfill'
@@ -29,10 +29,10 @@ import {transformExtent} from 'ol/proj';
 import 'ol/ol.css';
 import './index.css';
 import { Travel } from './source/travel';
-import { Geometry, LineString, Point } from 'ol/geom';
+import { Geometry } from 'ol/geom';
 import { TaxonView } from './control/TaxonView';
 import { Collection } from 'ol';
-import { observationStyle, pliantObservationStyle, selectedObservationStyle } from './style';
+import { observationStyle, pliantObservationStyle, selectedObservationStyle, travelStyle } from './style';
 import NewObservationControl from './control/NewObservationControl';
 import { SessionStorageSource } from './source/sessionStorage';
 
@@ -83,36 +83,7 @@ const travelSource = new Travel({sources: [inaturalistSource, sightingSource]});
 const travelLayer = new VectorLayer({
   maxResolution: 80,
   source: travelSource,
-  style: (feature: FeatureLike) => {
-    const geometry = feature.getGeometry() as LineString;
-    const styles = [
-      // linestring
-      new Style({
-        stroke: new Stroke({
-          color: '#ffcc33',
-          width: 2,
-        }),
-      }),
-    ];
-    geometry.forEachSegment(function (start, end) {
-      const dx = end[0] - start[0];
-      const dy = end[1] - start[1];
-      const rotation = Math.atan2(dy, dx);
-      // arrows
-      styles.push(
-        new Style({
-          geometry: new Point([(end[0] + start[0]) / 2, (end[1] + start[1]) / 2]),
-          image: new Icon({
-            src: 'arrow.png',
-            anchor: [0.75, 0.5],
-            rotateWithView: true,
-            rotation: -rotation,
-          }),
-        }),
-      );
-    });
-    return styles;
-  },
+  style: travelStyle,
 });
 
 const setTime = pit.set.bind(pit);

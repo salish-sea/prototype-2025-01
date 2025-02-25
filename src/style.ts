@@ -1,8 +1,11 @@
-import {Circle, Fill, Text, Stroke, Style} from 'ol/style';
+import {Circle, Fill, Text, Stroke, Style, Icon} from 'ol/style';
 import type { ObservationProperties } from './observation';
 import type Feature from 'ol/Feature';
-import type { Geometry } from 'ol/geom';
+import { Point, type Geometry, type LineString } from 'ol/geom';
 import { taxonByName } from './Taxon';
+import { bearing as getBearing } from "@turf/bearing";
+import { point as turfPoint } from "@turf/helpers";
+import { getDistance, getLength } from 'ol/sphere';
 
 const black = '#000000';
 const white = '#ffffff';
@@ -81,3 +84,61 @@ export const sighterStyle = new Style({
     text: '👁️‍🗨️',
   }),
 });
+
+export const bearingStyle = (feature: Feature<LineString>) => {
+  const geom = feature.getGeometry();
+  const styles = [
+    new Style({
+      stroke: new Stroke({
+        color: '#0000ff',
+        lineDash: [3, 6],
+        width: 1.5,
+      }),
+    }),
+  ];
+
+  if (geom) {
+    const [p1, p2] = geom.getCoordinates();
+    const distance = (getDistance(p1, p2) / 1000).toFixed(1);
+    const coords = geom.getCoordinates().map(coord => turfPoint(coord));
+    const bearing = getBearing(coords[0], coords[1]).toFixed(0);
+    styles.push(new Style({
+      text: new Text({
+        backgroundFill: new Fill({color: 'rgba(240, 240, 240, 0.85)'}),
+        text: `${distance} km at ${bearing}°`,
+      }),
+    }));
+  }
+  return styles;
+};
+
+export const travelStyle = (feature: Feature<LineString>) => {
+  const geometry = feature.getGeometry()!;
+  const styles = [
+    // linestring
+    new Style({
+      stroke: new Stroke({
+        color: '#ffcc33',
+        width: 2,
+      }),
+    }),
+  ];
+  geometry.forEachSegment(function (start, end) {
+    const dx = end[0] - start[0];
+    const dy = end[1] - start[1];
+    const rotation = Math.atan2(dy, dx);
+    // arrows
+    styles.push(
+      new Style({
+        geometry: new Point([(end[0] + start[0]) / 2, (end[1] + start[1]) / 2]),
+        image: new Icon({
+          src: 'arrow.png',
+          anchor: [0.75, 0.5],
+          rotateWithView: true,
+          rotation: -rotation,
+        }),
+      }),
+    );
+  });
+  return styles;
+}
