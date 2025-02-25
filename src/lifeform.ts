@@ -8,6 +8,8 @@ export type IndividualOrca = `${typeof pods[number]}${number}` | `${typeof pods[
 export type Matriline = `${IndividualOrca}s`;
 type Orca = typeof orca[number] | typeof ecotypes[number] | Pod | IndividualOrca | Matriline;
 
+window.biggs = biggs;
+
 const normalizeIndividual = (name: string) => {
   return name.replace(/^(J|K|L|T|CRC)0+/, '$1');
 }

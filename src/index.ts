@@ -221,6 +221,7 @@ dragBox.on('boxend', () => {
 // });
 
 declare global {
+  var biggs: any;
   var sightingLayer: any;
   var view: any;
 }

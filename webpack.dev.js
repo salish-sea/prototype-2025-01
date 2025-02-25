@@ -5,7 +5,7 @@ const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPl
 
 module.exports = merge(common, {
   mode: 'development',
-  devtool: 'inline-source-map',
+  // devtool: 'inline-source-map',
   devServer: {
     hot: false,
     static: {
@@ -14,4 +14,5 @@ module.exports = merge(common, {
     compress: true,
     port: 9000,
   },
+  plugins: [new BundleAnalyzerPlugin()],
 });
