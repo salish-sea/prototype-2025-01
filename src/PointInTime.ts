@@ -3,6 +3,10 @@ import { Observable } from 'ol';
 
 const oneDay = Temporal.Duration.from({hours: 48});
 
+export const toNaiveISO = (instant: Temporal.Instant) => {
+  return instant.toZonedDateTimeISO('PST8PDT').toPlainDateTime().toString({ smallestUnit: 'minute' });
+}
+
 export class PointInTime extends Observable {
   value: Temporal.Instant | null = null;
 
@@ -28,7 +32,7 @@ export class PointInTime extends Observable {
   }
 
   toNaiveISO(): string | null {
-    return this.value ? this.value.toZonedDateTimeISO('PST8PDT').toPlainDateTime().toString({ smallestUnit: 'minute' }) : null;
+    return this.value ? toNaiveISO(this.value) : null;
   }
 
   toPlainDate(): Temporal.PlainDate | null {

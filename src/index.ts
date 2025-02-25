@@ -34,6 +34,7 @@ import { TaxonView } from './control/TaxonView';
 import { Collection } from 'ol';
 import { observationStyle, pliantObservationStyle, selectedObservationStyle } from './style';
 import NewObservationControl from './control/NewObservationControl';
+import { SessionStorageSource } from './source/sessionStorage';
 
 useGeographic();
 
@@ -131,7 +132,7 @@ const dragBox = new DragBox({
   condition: platformModifierKeyOnly,
 });
 
-const newObservations = new Vector({});
+const newObservations = new SessionStorageSource({key: 'new-observations'});
 const newObservationsLayer = new VectorLayer({source: newObservations});
 const modify = new Modify({source: newObservations, style: pliantObservationStyle});
 const snap = new Snap({source: newObservations});
@@ -198,8 +199,10 @@ const map = new Map({
   view,
 });
 
-const newObservationControl = new NewObservationControl({map, source: newObservations});
-map.addControl(newObservationControl);
+newObservations.on('featuresloadend', () => {
+  const newObservationControl = new NewObservationControl({map, source: newObservations});
+  map.addControl(newObservationControl);
+});
 
 dragBox.on('boxend', () => {
   const boxExtent = transformExtent(dragBox.getGeometry().getExtent(), 'EPSG:3857', 'EPSG:4326');
