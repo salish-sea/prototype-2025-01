@@ -77,11 +77,23 @@
     "parent_id": 41438,
     "preferred_common_name": "Harbor Porpoise"
   },
+  "623441": {
+    "id": 623441,
+    "name": "Phocoena phocoena vomerina",
+    "parent_id": 623441,
+    "preferred_common_name": "Pacific Harbor Porpoise"
+  },
   "41445": { "id": 41445, "name": "Phocoenoides", "parent_id": 41437, "preferred_common_name": "Phocoenoides" },
   "41446": {
     "id": 41446,
     "name": "Phocoenoides dalli",
     "parent_id": 41445,
+    "preferred_common_name": "Dall's Porpoise"
+  },
+  "1306016": {
+    "id": 1306016,
+    "name": "Phocoenoides dalli dalli",
+    "parent_id": 41446,
     "preferred_common_name": "Dall's Porpoise"
   },
   "41457": {
@@ -199,6 +211,12 @@
     "name": "Megaptera novaeangliae",
     "parent_id": 41565,
     "preferred_common_name": "Humpback Whale"
+  },
+  "705329": {
+    "id": 705329,
+    "name": "Megaptera novaeangliae kuzira",
+    "parent_id": 705329,
+    "preferred_common_name": "North Pacific Humpback Whale"
   },
   "41573": {
     "id": 41573,

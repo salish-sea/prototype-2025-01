@@ -3,7 +3,7 @@ import { Control } from "ol/control";
 import Draw from 'ol/interaction/Draw';
 import type { Vector } from 'ol/source';
 import { taxonByName } from "../Taxon";
-import { Point } from 'ol/geom';
+import { Geometry, LineString, Point } from 'ol/geom';
 import { Feature } from 'ol';
 import { observationStyle, sighterStyle } from "../style";
 import { Temporal } from 'temporal-polyfill';
@@ -21,6 +21,7 @@ const taxa = [
 
 const subjectFeatureId = 'subject-feature';
 const observerFeatureId = 'observer-feature';
+const bearingFeatureId = 'observer-subject-bearing';
 
 const bindInputToFeature = (input: HTMLInputElement, feature: Feature<Point>, map: Map, source: Vector) => {
   const draw = new Draw({source, type: 'Point'});
@@ -71,7 +72,7 @@ const bindInputToFeature = (input: HTMLInputElement, feature: Feature<Point>, ma
 }
 
 export default class NewObservationControl extends Control {
-  constructor({map, source}: {map: Map, source: Vector<Feature<Point>>}) {
+  constructor({map, source}: {map: Map, source: Vector<Feature<Geometry>>}) {
     const container = document.createElement('div');
     container.className = 'new-observation-control ol-unselectable ol-control inactive';
 
@@ -96,7 +97,7 @@ export default class NewObservationControl extends Control {
     taxonLabel.appendChild(taxonSelect);
     form.appendChild(taxonLabel);
 
-    const subjectFeature = source.getFeatureById(subjectFeatureId) || new Feature({
+    const subjectFeature = source.getFeatureById(subjectFeatureId) as Feature<Point> | null || new Feature({
       geometry: new Point([0, 0]),
       taxon: taxonSelect.value
     });
@@ -104,6 +105,9 @@ export default class NewObservationControl extends Control {
     subjectFeature.setStyle(observationStyle);
     if (!subjectFeature.get('observedAt'))
       subjectFeature.set('observedAt', toNaiveISO(Temporal.Now.instant()));
+    if (!subjectFeature.get('taxon'))
+      subjectFeature.set('taxon', 'Orcinus orcas');
+    taxonSelect.value = subjectFeature.get('taxon');
     source.addFeature(subjectFeature);
     const subjectLocationLabel = document.createElement('label');
     subjectLocationLabel.innerText = 'Where was it?';
@@ -114,7 +118,9 @@ export default class NewObservationControl extends Control {
     subjectLocationLabel.appendChild(subjectLocation);
     form.appendChild(subjectLocationLabel);
 
-    const observerFeature = source.getFeatureById(observerFeatureId) || new Feature({geometry: new Point([0, 0])});
+    const observerFeature = source.getFeatureById(observerFeatureId) as Feature<Point> | null || new Feature({
+      geometry: new Point([0, 0]),
+    });
     observerFeature.setId(observerFeatureId);
     observerFeature.setStyle(sighterStyle);
     source.addFeature(observerFeature);
@@ -137,6 +143,21 @@ export default class NewObservationControl extends Control {
     observedAtInput.type = 'datetime-local';
     observedAtLabel.appendChild(observedAtInput);
     form.appendChild(observedAtLabel);
+
+    const bearingLine = source.getFeatureById(bearingFeatureId) as Feature<LineString> | null || new Feature<LineString>();
+    bearingLine.setId(bearingFeatureId);
+    const recomputeBearing = () => {
+      const observerCoordinates = observerFeature.getGeometry()!.getCoordinates();
+      const subjectCoordinates = subjectFeature.getGeometry()!.getCoordinates();
+      if (observerCoordinates[0] < 100 && subjectCoordinates[0] < 100)
+        bearingLine.setGeometry(new LineString([observerCoordinates, subjectCoordinates]));
+      else
+        bearingLine.setGeometry(undefined);
+    };
+    observerFeature.getGeometry()!.addEventListener('change', recomputeBearing);
+    subjectFeature.getGeometry()!.addEventListener('change', recomputeBearing);
+    recomputeBearing();
+    source.addFeature(bearingLine);
 
     super({element: container});
 

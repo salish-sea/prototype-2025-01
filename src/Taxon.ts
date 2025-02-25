@@ -17,18 +17,22 @@ const findChildren = ({id}: {id: number}): Taxon[] => {
 
 export const normalizeTaxon = (name: string) => {
   const lowerName = name.toLowerCase().replace(' whale', '');
-  let taxon = taxonByName[lowerName];
+  let taxon = taxonByName[lowerName] || taxonByCommonName[lowerName];
+
+  if (!taxon && lowerName.indexOf('resident killer') !== -1)
+    taxon = taxonByName['orcinus orca ater'];
+
   if (!taxon && lowerName.indexOf('orca') !== -1)
     taxon = taxonByName['orcinus orca'];
 
-  if (!taxon)
-    taxon = taxonByCommonName[lowerName];
+  if (!taxon && name.toLowerCase().indexOf('killer whale') !== -1)
+    taxon = taxonByName['orcinus orca'];
 
-  if (lowerName.indexOf('resident killer') !== -1)
-    taxon = taxonByName['orcinus orca ater'];
-
-  if (lowerName.indexOf('minke') !== -1)
+  if (!taxon && lowerName.indexOf('minke') !== -1)
     taxon = taxonByName['balaenoptera acutorostrata'];
+
+  if (!taxon && lowerName.indexOf('finback') !== -1)
+    taxon = taxonByName['balaenoptera physalus'];
 
   if (!taxon) {
     console.error(`Unknown taxon ${name}.`);

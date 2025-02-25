@@ -108,6 +108,7 @@ export class Tiles extends ImageTile {
     const url = (z: number, x: number, y: number, options: LoaderOptions) => {
       return queryStringAppend(`https://tiles.inaturalist.org/v2/grid/${z}/${x}/${y}.png`, {
         geoprivacy: 'open',
+        taxon_geoprivacy: 'open',
         acc_below: 500,
         tile_size: 256,
         taxon_id: query.taxon.id,
