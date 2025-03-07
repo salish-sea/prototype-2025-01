@@ -160,6 +160,11 @@ const map = new Map({
         ],
       })
     }),
+    new TileLayer({
+      source: new XYZ({
+        url: "https://server.arcgisonline.com/ArcGIS/rest/services/Ocean/World_Ocean_Reference/MapServer/tile/{z}/{y}/{x}",
+      }),
+    }),
     travelLayer,
     iNaturalistTileLayer,
     inaturalistLayer,
